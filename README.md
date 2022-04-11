@@ -2,6 +2,9 @@
 
 This app will help a non-profit manage clerical and organizational duties. The program which is based in NJ helps blind students prepare for jobs/college.
 
+Mock Up:
+https://app.moqups.com/g8zGegcQzTO1FrObmjzsy3hT2fw7yopH/view/page/a77465515
+
 Roles (user stories)
 
 Student
