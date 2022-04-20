@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "..\\..\\..\\..\\..\\..\\..\\..\\blind-engagement"
+		},
+		{
+			"name": "backend",
+			"path": "..\\..\\..\\..\\..\\.."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive",
+		"git.ignoreLimitWarning": true
+	}
+}
