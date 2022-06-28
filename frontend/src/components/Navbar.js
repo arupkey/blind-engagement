@@ -16,7 +16,7 @@ export class Navbar extends React.Component{
             </Routes>
           </BrowserRouter> */}
           
-          <ul id="nav-mobile" class="center">
+          <ul id="nav-mobile" class="right">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/calendar">Calendar</Link></li>
             <li><Link to="/forum">Forum</Link></li>

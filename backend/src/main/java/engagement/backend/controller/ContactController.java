@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import engagement.backend.model.Contact;
 import engagement.backend.repository.ContactRepository;
 
-//@CrossOrigin(origins = "http:localhost:9898")
+@CrossOrigin(origins = "http:localhost:3000")
 @RestController
 @RequestMapping("/api/Contact")
 public class ContactController {
@@ -32,7 +34,7 @@ public class ContactController {
     }
 
     @GetMapping("/{id}")
-    public Contact GetContact(@PathVariable Long id){
+    public Contact GetContact(@PathVariable Long id, HttpServletResponse response){
         return ContactRepository.findById(id).orElse(null);
 
     }
