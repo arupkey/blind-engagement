@@ -1,13 +1,34 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import {BrowserRouter, Routes, Route, Link} from "react-router-dom";
+import {Home} from "./components/Home.js";
+import {EventCalendar} from "./components/EventCalendar.js";
+import {Forum} from "./components/Forum.js";
+import {Resources} from "./components/Resources.js";
+import {ContactInfo} from "./components/ContactInfo";
+import {Personnel} from "./components/Personnel.js";
+import {Timesheets} from "./components/Timesheets.js";
+import { ForumTopic } from './components/ForumTopic';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="calendar" element={<EventCalendar />} />
+        <Route path="forum/*" element={<Forum />} />
+        <Route path="resources" element={<Resources />} />
+        <Route path="contactinfo" element={<ContactInfo />} />
+        <Route path="personnel" element={<Personnel />} />
+        <Route path="timesheets" element={<Timesheets />} />
+        <Route path="post" element={<ForumTopic /> }/>
+      </Routes>      
+    </BrowserRouter>
+    
   </React.StrictMode>
 );
 
