@@ -6,7 +6,7 @@ import {BrowserRouter, Routes, Route, Link} from "react-router-dom";
 import {Home} from "./components/Home.js";
 import {EventCalendar} from "./components/EventCalendar.js";
 import {Forum} from "./components/Forum.js";
-import {Resources} from "./components/Resources.js";
+import {Resources} from "./components/Resources";
 import {ContactInfo} from "./components/ContactInfo";
 import {Personnel} from "./components/Personnel.js";
 import {Timesheets} from "./components/Timesheets.js";
