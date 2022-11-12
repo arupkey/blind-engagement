@@ -2,25 +2,43 @@ package engagement.backend.model;
 
 import java.sql.Timestamp;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import javax.persistence.OneToOne;
 
 import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "Contacts")
+@Table(name = "contacts")
 public class Contact {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long contactID;
+    private Long ContactID;
+
+    // @JsonBackReference
+    // @OneToOne(mappedBy = "contact")
+    // private Student student;
+
+    // @JsonBackReference
+    // @OneToOne(mappedBy = "contact")
+    // private Parent parent;
+
+    // @OneToOne(cascade = CascadeType.ALL)
+    // @JoinColumn(name = "ContactID", referencedColumnName = "ContactID")
+    // private Student student;
 
     @Column(name = "PrimaryPhone")
     private String primaryPhone;
@@ -64,14 +82,16 @@ public class Contact {
         this.city = city;
         this.state = state;
         this.zip = zip;
+        //this.student = stdnt;
+        //this.parent = prnt;
     }
 
 
     public long getId() {
-        return contactID;
+        return ContactID;
     }
     public void setId(long id) {
-        this.contactID = id;
+        this.ContactID = id;
     }
     public String getPrimaryPhone() {
         return primaryPhone;
@@ -108,7 +128,7 @@ public class Contact {
         return address2;
     }
     public void setAddress2(String address2) {
-        this.address1 = address2;
+        this.address2 = address2;
     }
     public String getCity() {
         return city;
@@ -129,5 +149,21 @@ public class Contact {
     public void setZip(String zip) {
         this.zip = zip;
     }
+
+    // public Student getStudent(){
+    //     return student;
+    // }
+
+    // public void setStudent(Student stdnt){
+    //     this.student = stdnt;
+    // }
+
+    // public Parent getParent(){
+    //     return parent;
+    // }
+
+    // public void setParent(Parent prnt){
+    //     this.parent = prnt;
+    // }
 
 }

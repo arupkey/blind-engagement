@@ -28,7 +28,7 @@ export class Forum extends React.Component {
           <div>
             <div class="divider"></div>
             <div class="section">
-              <h5><Link key={topic} to={{pathname: "/post", props:this.props, state:this.state, topicName:{topic}}}>{topic}</Link></h5>
+              <h5><Link key={topic} to={{pathname: "/post?"+index }}>{topic}</Link></h5>
               <p>{topicDescr}</p>
             </div>
           </div>
