@@ -1,6 +1,7 @@
 package engagement.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,19 +16,34 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 
 import engagement.backend.model.Staff;
+import engagement.backend.model.Student;
 import engagement.backend.repository.StaffRepository;
+import engagement.backend.repository.StudentRepository;
+import engagement.backend.model.Contact;
 
 @RestController
 @RequestMapping("/api/Staff")
 public class StaffController {
     
     @Autowired
+    private ContactController contactController;
+
+    @Autowired
     private StaffRepository staffRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     @GetMapping("/")
     public List<Staff> getStaff(){
         return this.staffRepository.findAll();
     }
+
+    // @GetMapping("/AllStudents/")
+    // public List<Staff> getStaffAllWithStudents(){
+    //     return this.staffRepository.findAllWithStudents();
+    // }
+
 
     @GetMapping("/{id}")
     public Staff GetStaff(@PathVariable Long id){
@@ -46,12 +62,27 @@ public class StaffController {
         oldStaff.setFirstName(staff.getFirstName());
         oldStaff.setLastName(staff.getLastName());
         oldStaff.setDOB(staff.getDOB());
-        oldStaff.setContactID(staff.getContactID());
+        
+        Contact updatedContact = contactController.PutContact(staff.getContact());
+        oldStaff.setContact(updatedContact);
+
         return staffRepository.save(oldStaff);
+    }
+
+    static Specification<Student> StaffSpecification(Long staffID) {
+        return (student, cq, cb) -> cb.equal(student.get("staff").get("staffID"), staffID);
     }
 
     @DeleteMapping("/{id}")
     public Long DeleteStaff(@PathVariable Long id){
+
+       List<Student> students = studentRepository.findAll(StaffSpecification(id));
+
+        for(Student std : students){
+            std.setStaff(null);
+            studentRepository.save(std);
+        }
+
         staffRepository.deleteById(id);
         return id;
     }

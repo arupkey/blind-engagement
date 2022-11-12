@@ -1,13 +1,30 @@
 import {React, useState} from "react";
 import ReactDOM from 'react-dom';
 
+import {useLocation} from 'react-router-dom';
+
+//import { useParams } from 'react-router-dom';
+
 //could also try function component as learned from code academy
 
 export function ForumTopic (props) {
+  
+  //let { code } = useParams();
+  
+  let location = useLocation();
+
+  console.log(location); //this actually fucking works btw!!! as of 9/29 1 am!!!
+
+  //const search = props.location.search; // could be '?foo=bar'
+  //const params = new URLSearchParams(search);
+  //const foo = params.get('foo');
+
+  //console.log(params);
+
   return (
     <div>
       <h5>I'm a forum topic that will have posts</h5>
-      <p>Hello my props are {props.shit} {props.test} {props.bullshit}</p>
+      <p>Hello my location search is {location.search} </p>
     </div>
     );
 }

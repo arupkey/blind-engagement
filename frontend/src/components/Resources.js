@@ -1,42 +1,41 @@
 import React from "react";
 
-export class Resources extends React.Component {
-    constructor(props){
-      super(props);
-  
-    }
-    
-    componentDidMount(){
-  
-    }
-  
-    render(){
-    return (
-      <div className="container">
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Link from '@material-ui/core/Link';
 
-        <p>EDGE Resources Below</p>
-  {/* will have basic list of links here like nj gov resource pages fact sheets etc 
-      NJ Commission for the Blind and Visually Impaired
-      https://www.state.nj.us/humanservices/cbvi/
-      Family Resource Network
-      https://www.familyresourcenetwork.org/
-      JKTC
-      https://www.state.nj.us/humanservices/cbvi/services/jkrc/
-      NFB
-      https://nfb.org/
-      ACB
-
-      AFB
-
-      AccessLink
-
-      Scholarships
-      can be fake for now
-  */}
-      </div>
-    );
-    }
-  }
+export function Resources(){
   
-  export default Resources;
-  
+  //can add fake scholarships to list later or maybe real
+  const resourceNames = ['NJ Commission for the Blind and Visually Impaired','Family Resource Network','JKTC', 'NFB','ACB','AFB','AccessLink'];
+  const resourceLinks = ['https://www.state.nj.us/humanservices/cbvi/','https://www.familyresourcenetwork.org/','https://www.state.nj.us/humanservices/cbvi/services/jkrc/', 'https://nfb.org/','https://www.acb.org/','https://www.afb.org/','https://accesslink.njtransit.com/'];
+
+  const resourceCards = resourceNames.map((resource, index) =>{
+    const resourceLink = resourceLinks[index];
+    return(
+      <li style={{paddingBottom: '10px'}} >
+        <Card sx={{ minWidth: 275 }}>
+          <CardContent>
+            <Typography aria-describedby={resource} variant="h5" component="div"> {resource} </Typography>
+            <Link target="_blank" href={resourceLink} rel="noreferrer">{resourceLink}</Link>
+          </CardContent>
+        </Card>
+      </li>
+    )
+  })
+
+  return (
+    <div className="container">
+
+      <h3>EDGE Resources Below</h3>
+
+      <ul>
+        {resourceCards}
+      </ul>
+
+    </div>
+  );
+}
