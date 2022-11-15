@@ -9,7 +9,7 @@ import {Forum} from "./components/Forum.js";
 import {Resources} from "./components/Resources";
 import {ContactInfo} from "./components/ContactInfo.jsx";
 import { Personnel } from './components/Personnel.jsx';
-import {Timesheets} from "./components/Timesheets.js";
+import {Timesheets} from "./components/Timesheets.jsx";
 import { ForumTopic } from './components/ForumTopic';
 import {Students} from './components/Students.jsx';
 
