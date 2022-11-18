@@ -27,15 +27,15 @@ public class Parent {
     private long parentID;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
-    @JsonManagedReference
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "parentID", referencedColumnName = "parentID", insertable = false, updatable = false)
+    //@JsonManagedReference
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "parentID", referencedColumnName = "parentID")
     private StudentParent studentParent;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
-    @JsonManagedReference
+    //@JsonManagedReference
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "ContactID", referencedColumnName = "ContactID", insertable = false, updatable = false)
+    @JoinColumn(name = "ContactID", referencedColumnName = "ContactID")
     private Contact contact;
 
     @Column(name = "FirstName")
@@ -47,9 +47,6 @@ public class Parent {
     @Column(name = "DOB")
     private Timestamp DOB;
 
-    @Column(name = "ContactID")
-    private long ContactID;
-
     public Parent(){
 
     }
@@ -59,7 +56,6 @@ public class Parent {
         this.firstName = firstName;
         this.lastName = lastName;
         this.DOB = DOB;
-        this.ContactID = ContactID;
         this.studentParent = sp;
         this.contact = cntct;
     }
@@ -88,13 +84,6 @@ public class Parent {
     }
     public void setDOB(Timestamp DOB) {
         this.DOB = DOB;
-    }
-
-    public Long getContactID() {
-        return ContactID;
-    }
-    public void setContactID(Long ContactID) {
-        this.ContactID = ContactID;
     }
 
     public StudentParent getStudentParent(){
