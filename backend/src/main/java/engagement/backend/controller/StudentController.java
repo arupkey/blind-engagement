@@ -20,7 +20,7 @@ import engagement.backend.model.Student;
 import engagement.backend.repository.MentorRepository;
 import engagement.backend.repository.StaffRepository;
 import engagement.backend.repository.StudentRepository;
-import engagement.backend.model.Contact;;
+import engagement.backend.model.Contact;
 
 //@CrossOrigin(origins = "http:localhost:9898")
 @RestController

@@ -122,7 +122,7 @@ export function Personnel() {
     "Accept-Language": "en",
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "http://localhost:3000",
-    "Access-Control-Allow-Methods": "DELETE, POST, GET, OPTIONS",
+    "Access-Control-Allow-Methods": "DELETE, POST, PUT, GET, OPTIONS",
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, X-Requested-With",
     Authorization: `Basic ${hash}`,
@@ -520,6 +520,10 @@ export function Personnel() {
     const value = e.target.value;
     const name = e.target.name;
 
+    console.log(e.target.value);
+    console.log(e.target.name);
+    console.log(row);
+
     if(row.rowType == "stf"){
       if (!previous[row.id+row.rowType]) {
         setPrevious((state) => ({ ...state, [row.id+row.rowType]: row }));
@@ -703,7 +707,7 @@ export function Personnel() {
 
     if(rowType == "stf"){       
 
-      const row = rows.filter(stf => stf.id == sid)[0];
+      const row = rows.filter(stf => stf.id == sid && !stf.isPlaceholder)[0];
 
       if(sid == null){
         sendPost(row);
@@ -724,7 +728,7 @@ export function Personnel() {
     }
     else if(rowType == "m"){  
       
-      const row = mentorRows.filter(m => m.id == sid)[0];
+      const row = mentorRows.filter(m => m.id == sid && !m.isPlaceholder)[0];
 
       if(sid == null){
         sendPost(row);

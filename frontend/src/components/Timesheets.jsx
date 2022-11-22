@@ -37,92 +37,46 @@ import CustomKeyboardDatePicker from "./CustomKeyboardDatePicker";
 export function Timesheets() {
   const [loading, setLoading] = useState(true);
 
-  const [student, setStudent] = useState({});
+  const [eventAttendees, setEventAttendees] = useState({});
   const [mentors, setMentors] = useState({});
-
-  //this state replaces need to maintain twinParentID in student rows in order to maintain data uniformity in UI between the representation of a student in the mentors and staff grids
-  const [twinRows, setTwinRows] = useState({});
   
-  const createData = (firstName, lastName, DOB, contact, id, rowType, stds) => {
+  const createData = (id, firstName, lastName, ea) => {
 
-    const students = [];
-    
-    stds.map((value) => (
-      
-      students.push(
+    const attendees = [];
+    var sum = 0;
+    ea.map((value) => (
+
+      attendees.push(
         {
-          id: value.studentID,
-          rowType: "std",
-          parentRowID: id,      
-          parentRowType: rowType,     
-          firstName: value.firstName,      
-          lastName: value.lastName,      
-          DOB: format(new Date(value.dob), "MM/dd/yyyy"),      
-          grade: value.grade,      
-          primaryPhone : (value.contact != null) ? value.contact.primaryPhone : "",      
-          homePhone: (value.contact != null) ? value.contact.homePhone : "",      
-          cellPhone: (value.contact != null) ? value.contact.cellPhone : "",      
-          email: (value.contact != null) ? value.contact.email : "",      
-          address1: (value.contact != null) ? value.contact.address1 : "",      
-          address2: (value.contact != null) ? value.contact.address2 : "",      
-          city: (value.contact != null) ? value.contact.city : "",      
-          state: (value.contact != null) ? value.contact.state : "",      
-          zip: (value.contact != null) ? value.contact.zip : "",      
-          contactID: (value.contact != null) ? value.contact.contactID : "",      
+          id: value.attendeeID,
+          rowType: "ea",
+          eventID: (value.event != null) ? value.event.eventID : null,      
+          mentorID: id,           
+		      eventName: (value.event != null) ? value.event.eventName : "",
+          eventDate: (value.event != null) ? format(new Date(value.event.eventDate), "MM/dd/yyyy") : format(new Date(), "MM/dd/yyyy"),
+          location: (value.event != null) ? value.event.location : "",
+          hoursAttended: value.hours,      
           isEditMode: false,
         }
       ),
-      (rowType === "stf") && setTwinRows((state) => ({ ...state, [value.studentID]: ({mentorID: ((value.mentor !== null) ? value.mentor.mentorID : null), staffID: ((value.staff !== null) ? value.staff.staffID : null) })}))
+      sum+=value.hours
     ));
 
-    const unaccountedPlaceholder = ({
-      id: null,
-      rowType: "std",
-      eventName: "Unaccounted for Hours",
-      eventDate: format(new Date(), "MM/dd/yyyy"),
-      location: "",
-      hoursAttended: 0,
-      isEditMode: false,
-      isPlaceholder: true,
-      contactID: null,
-    });
-
-    students.push(unaccountedPlaceholder);
-
-    setOpens((state) => ({ ...state, [id+rowType]: false }));
-
-    const primaryPhone  = (contact != null) ? contact.primaryPhone : "";
-    const homePhone = (contact != null) ? contact.homePhone : "";
-    const cellPhone = (contact != null) ? contact.cellPhone : "";
-    const email = (contact != null) ? contact.email : "";
-    const address1 = (contact != null) ? contact.address1 : "";
-    const address2 = (contact != null) ? contact.address2 : "";
-    const city = (contact != null) ? contact.city : "";
-    const state = (contact != null) ? contact.state : "";
-    const zip = (contact != null) ? contact.zip : "";
-    const contactID = (contact != null) ? contact.contactID : "";
+    setOpens((state) => ({ ...state, [id+"m"]: false }));
 
     return {
       id,
-      rowType,
+      rowType:"m",
       firstName,
       lastName,
-      DOB,
-      primaryPhone,
-      homePhone,
-      cellPhone,
-      email,
-      address1,
-      address2,
-      city,
-      state,
-      zip,
-      students,
+      totalHours: sum,
+      attendees,
       isEditMode: false,
-      isPlaceholder: false,
-      contactID,
     };
   };
+
+  const [fromDate, setFromDate] = useState(new Date("01/01/2022"))
+  const [toDate, setToDate] = useState(new Date("12/31/2022"))
 
   const [mentorRows, setMentorRows] = useState([]);
 
@@ -133,40 +87,47 @@ export function Timesheets() {
   const headers = {
     "Cache-Control": "no-cache",
     "Accept-Language": "en",
-    "Content-Type": "application/json",
+    "Content-Type": "application/json, x-www-form-urlencoded;charset=UTF-8",
     "Access-Control-Allow-Origin": "http://localhost:3000",
-    "Access-Control-Allow-Methods": "DELETE, POST, GET, OPTIONS",
+    "Access-Control-Allow-Methods": "DELETE, POST, PUT, GET, OPTIONS",
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, X-Requested-With",
     Authorization: `Basic ${hash}`,
   };
 
-  const getAllStudents = useCallback(async () => {
-    const res = await axios.get("http://localhost:9898/api/Student/");
-    setStudent(res.data);
-  }, [student]);
+  const getAllEventAttendees = useCallback(async () => {
+    //need to advance to date 1 month and then subtract one day to make it last day of to month
+    const res = await axios.get(`http://localhost:9898/api/eventattendees/timesheets/?from=${format(fromDate, "yyyy-MM")}-01&to=${format(toDate, "yyyy-MM-dd")}`);
+    setEventAttendees(res.data);
+    console.log(eventAttendees);
+  }, [eventAttendees]);
 
   const getAllMentors = useCallback(async () => {
     const res = await axios.get("http://localhost:9898/api/Mentor/", headers);
     setMentors(res.data);
-
+    
     const newRows = mentors.map((mentor) => {
       return (
-        createData(mentor.firstName, mentor.lastName, format(new Date(mentor.dob), "MM/dd/yyyy"), mentor.contact, mentor.mentorID, "m", student.filter(item => (item.mentor !== null) && (item.mentor.mentorID === mentor.mentorID)))
+        createData(mentor.mentorID, mentor.firstName, mentor.lastName, eventAttendees.filter(item => (item.mentor.mentorID === mentor.mentorID))) //don't need to null check because that's done for this api endpoint
       ); 
     });
 
     setMentorRows(newRows);
+    console.log(mentorRows);
 
   }, [mentors]);
 
   
   useEffect(() => {
+    console.log("get all events time at " + format(Date.now(), "hh:mm:ss"));
+    console.log(fromDate); 
+    console.log(toDate);
+    console.log(loading); 
     if (loading){
-      getAllStudents().then(() => getAllMentors().then(() => setLoading(false)));
+      getAllEventAttendees().then(() => getAllMentors().then(() => setLoading(false)));
     }
     
-  }, [getAllStudents, getAllMentors]);
+  }, [getAllEventAttendees, getAllMentors, loading, fromDate, toDate]);
 
   // const handleChange = ({ target }) => {
   //   target.preventDefault()
@@ -206,11 +167,13 @@ export function Timesheets() {
 
   const CustomTableRow = (props) => {
 
+    //console.log(props);
+
     return (
       <>
       <TableRow key={props.props.id}>
         <TableCell>
-          {(props.props.id != null || props.props.isPlaceholder) ? (
+          {(props.props.id != null) ? (
             <IconButton aria-label="expand row" size="small" onClick={() => setOpens((state) => ({ ...state, [props.props.id+props.props.rowType]: !opens[props.props.id+props.props.rowType] }))} >
               {opens[props.props.id+props.props.rowType] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
@@ -237,13 +200,9 @@ export function Timesheets() {
               </IconButton>
             </>
           ) : (
-            props.props.isPlaceholder ? (
-              <></>
-            ) : (
             <IconButton aria-label="edit" onClick={() => onToggleEditMode(props.props.id, props.props.rowType)} >
               <EditIcon />
             </IconButton>
-            )
           )}
         </TableCell>
       </TableRow>
@@ -254,16 +213,16 @@ export function Timesheets() {
                 <Typography variant="h6" gutterBottom component="div">
                   Event Hours
                 </Typography>
-                <Table size="small" aria-label="students">
+                <Table size="small" aria-label="events attended">
                   <TableHead>
                     <TableRow>
                       <TableCell>Event Name</TableCell>
                       <TableCell>Event Date</TableCell>
-                      <TableCell align="right">Location</TableCell>
-                      <TableCell align="right">Hours Attended</TableCell>
+                      <TableCell>Location</TableCell>
+                      <TableCell>Hours Attended</TableCell>
                       <TableCell align="right">Actions</TableCell>
                       { !hasAddRow[props.props.id+props.props.rowType] ? (
-                        <IconButton aria-label="add new event attended" onClick={() => onAdd("std", props.props.id, props.props.rowType)} >
+                        <IconButton aria-label="add new event attended" onClick={() => onAdd("ea", props.props.id, props.props.rowType)} >
                           <AddIcon />
                         </IconButton>
                       ) : (
@@ -272,31 +231,32 @@ export function Timesheets() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {props.props.students.map((studentsRow) => (
-                      <TableRow key={studentsRow.id}>
+                    {props.props.attendees.map((attendeeRow) => (
+                      <TableRow key={attendeeRow.id}>
 
-                        <CustomTableCell {...{ row: studentsRow, name: "eventName", onChange }} > </CustomTableCell>
-                        <CustomTableCell {...{ row: studentsRow, name: "eventDate", onChange }} > </CustomTableCell>
-                        <CustomTableCell {...{ row: studentsRow, name: "location", onChange }} > </CustomTableCell>
-                        <CustomTableCell {...{ row: studentsRow, name: "hoursAttended", onChange }} > </CustomTableCell>
+                        <CustomTableCell {...{ row: attendeeRow, name: "eventName", onChange }} > </CustomTableCell>
+                        <CustomTableCell {...{ row: attendeeRow, name: "eventDate", onChange }} > </CustomTableCell>
+                        <CustomTableCell {...{ row: attendeeRow, name: "location", onChange }} > </CustomTableCell>
+                        <CustomTableCell {...{ row: attendeeRow, name: "hoursAttended", onChange }} > </CustomTableCell>
                         
                         <TableCell align="right">
-                          {studentsRow.isEditMode ? (
+                          {console.log(attendeeRow)}
+                          {attendeeRow.isEditMode ? (
                             <>
-                              <IconButton aria-label="save" onClick={() => onSave(studentsRow.id, studentsRow.rowType, props.props.id, props.props.rowType)} >
+                              <IconButton aria-label="save" onClick={() => onSave(attendeeRow.id, attendeeRow.rowType, props.props.id, props.props.rowType)} >
                                 <SaveIcon />
                               </IconButton>
                               <IconButton aria-label="revert" onClick={() => onRevert(props.props.id, props.props.rowType)} >
                                 <RevertIcon />
                               </IconButton>
-                              <IconButton aria-label="delete" onClick={() => onDelete(studentsRow.id, studentsRow.rowType, props.props.id, props.props.rowType)} >
+                              <IconButton aria-label="delete" onClick={() => onDelete(attendeeRow.id, attendeeRow.rowType, props.props.id, props.props.rowType)} >
                                 <DeleteIcon />
                               </IconButton>
                             </>
                           ) : (
                             <IconButton aria-label="edit" onClick={() => {
-                              onToggleEditMode(studentsRow.id, studentsRow.rowType, props.props.id, props.props.rowType);
-                              studentsRow.isEditMode = true;
+                              onToggleEditMode(attendeeRow.id, attendeeRow.rowType, props.props.id, props.props.rowType);
+                              attendeeRow.isEditMode = true;
                               }  
                             } >
                               <EditIcon />
@@ -323,27 +283,32 @@ export function Timesheets() {
       setMentorRows((state) => {
         return mentorRows.map((row) => {
           if (row.id === id) {
-            setPrevious((state) => ({ ...state, [row.id+row.rowType]: row }));
-            return { ...row, isEditMode: !row.isEditMode };
+            const attendees = row.attendees.map((attendeeRow) => {
+              setPrevious((state) => ({ ...state, [attendeeRow.id+attendeeRow.rowType+parentRowID+rowType.parentRowType]: attendeeRow }));
+              return {...attendeeRow, isEditMode: !attendeeRow.isEditMode }
+            });
+            setOpens((state) => ({ ...state, [id+"m"]: !opens[id+"m"]  }));
+            setPrevious((state) => ({ ...state, [row.id+row.rowType]: row}));
+            return { ...row, isEditMode: !row.isEditMode, attendees: attendees };
           }
           return row;
         });
       });
 
-    }else if(rowType == "std"){
-      
+    }else if(rowType == "ea"){
+      console.log(mentorRows);
         setMentorRows((state) => {
           return mentorRows.map((row) => {
             if (row.id === parentRowID) {
               
-              const updatedStudents = row.students.map((studentRow) => {
-                if (studentRow.id === id) {
-                  setPrevious((state) => ({ ...state, [studentRow.id+studentRow.rowType+parentRowID+parentRowType]: studentRow }));
-                  return { ...studentRow, isEditMode: !studentRow.isEditMode };
+              const updatedAttendees = row.attendees.map((attendeeRow) => {
+                if (attendeeRow.id === id) {
+                  setPrevious((state) => ({ ...state, [attendeeRow.id+attendeeRow.rowType+parentRowID+rowType.parentRowType]: attendeeRow }));
+                  return { ...attendeeRow, isEditMode: !attendeeRow.isEditMode };
                 }
-                return studentRow;
+                return attendeeRow;
               });
-              return { ...row, students: updatedStudents };
+              return { ...row, attendees: updatedAttendees };
             }
             return row;
           });
@@ -353,9 +318,13 @@ export function Timesheets() {
   };
 
   const onChange = (e, row) => {
-    
+
     const value = e.target.value;
     const name = e.target.name;
+
+    console.log(e.target.value);
+    console.log(e.target.name);
+    console.log(row);
 
     if(row.rowType == "m"){
 
@@ -364,36 +333,36 @@ export function Timesheets() {
       }
 
       const newRows = mentorRows.map((m) => {
-        if (m.id === row.id  && !m.isPlaceholder) {
+        if (m.id === row.id) {
           return { ...m, [name]: value };
         }
         return m;
       });
       setMentorRows(newRows);
     
-    }else if(row.rowType == "std"){
+    }else{
 
-      if (!previous[row.id+row.rowType+row.parentRowID+row.parentRowType]) {
-        setPrevious((state) => ({ ...state, [row.id+row.rowType+row.parentRowID+row.parentRowType]: row }));
+      if (!previous[row.id+row.rowType+row.mentorID+row.parentRowType]) {
+        setPrevious((state) => ({ ...state, [row.id+row.rowType+row.mentorID+row.parentRowType]: row }));
       }
         const newRows = mentorRows.map((mentorRow) => {
 
-          if(mentorRow.id === row.parentRowID){
-
-            const newStudents = mentorRow.students.map((student) => {
-              if(student.id === row.id){
-
-                return { ...student, [name]: value };
+          if(mentorRow.id === row.mentorID){
+            console.log("found mentor");
+            const newAttendees = mentorRow.attendees.map((attendee) => {
+              if(attendee.id === row.id){
+                console.log("found eventAttendee");
+                return { ...attendee, [name]: value };
               }
-              return student;
+              return attendee;
             });
-
-            return { ...mentorRow, students: newStudents };
+            console.log(newAttendees);
+            return { ...mentorRow, attendees: newAttendees };
             
           }
           return mentorRow;
         });
-        
+        console.log(newRows);
         setMentorRows(newRows);
         
     }
@@ -421,7 +390,6 @@ export function Timesheets() {
         zip: "",
         students: [],
         isEditMode: true,
-        isPlaceholder: false,
         contactID: null,
       });
 
@@ -431,28 +399,28 @@ export function Timesheets() {
 
     }else{
 
-      const newStudent = ({
+      const newEventAttendee = ({
         id: null,
-        rowType: "std",
-        parentRowID: parentRowID,
-        parentRowType: parentRowType,
-        firstName: "",
-        lastName: "",
-        DOB: format(new Date(), "MM/dd/yyyy"),
-        grade: 0,
+        rowType: "ea",
+        eventID: null,
+        mentorID: parentRowID,
+        eventName: "",
+        eventDate: format(new Date(), "MM/dd/yyyy"),
+        location: "",
+        hoursAttended: 0,
         isEditMode: true,
       });
 
       setMentorRows((state) => {
           return mentorRows.map((row) => {
             if(row.id == parentRowID){
-              return {...row, students: [...row.students, newStudent]};
+              return {...row, attendees: [...row.attendees, newEventAttendee]};
             }
             return row;
           });
         });
 
-        setPrevious((state) => ({ ...state, [null+"std"+parentRowID+parentRowType]: newStudent }));
+        setPrevious((state) => ({ ...state, [null+"ea"+parentRowID+parentRowType]: newEventAttendee }));
 
       
       setHasAddRow((state) => ({ ...state, [parentRowID+parentRowType]: true }));
@@ -461,50 +429,89 @@ export function Timesheets() {
   };
 
   const onSave = (sid, rowType, parentRowID = "", parentRowType = "") => {
-
+    console.log("saving row with id " + sid + " parentRowID is " + parentRowID + " row type is " + rowType);
+    
+    //mentor has no real things to save just going to save all the associated subrows and can't add a new mentor on this screen
     if(rowType == "m"){  
       
-      const row = mentorRows.filter(m => m.id == sid)[0];
+      setMentorRows((state) => {
+        return mentorRows.map((m) => {
+          if(m.id == sid){
+            var sum = 0;
+            const updatedAttds = m.attendees.map((attendeeRow) =>{
+              sum+=attendeeRow.hoursAttended;
+              if(attendeeRow.id == null){
+                sendPost(attendeeRow, true);
+                setHasAddRow((state) => ({ ...state, [parentRowID+parentRowType]: false }));
 
-      if(sid == null){
-        sendPost(row);
-        setHasAddRow((state) => ({ ...state, ["mGrd"]: false }));
+              }else{
+                sendUpdate(attendeeRow, true);
 
-      }else{
-        sendUpdate(row);
-        
-        //remove from previous
-        if (previous[sid+rowType]) {
-          setPrevious((state) => {
-            delete state[sid+rowType];
-            return state;
-          });   
-        }
+                //remove from previous
+                if (previous[attendeeRow.id+"ea"+sid+"m"]) {
+                  setPrevious((state) => {
+                    delete state[attendeeRow.id+"ea"+sid+"m"];
+                    return state;
+                  });   
+                }
+              }
+            });
+            return {...m, totalHours: sum, attendees: updatedAttds};
+          }
+          return m;
+        });
+      });
+
+      //remove from previous
+      if (previous[sid+rowType]) {
+        setPrevious((state) => {
+          delete state[sid+rowType];
+          return state;
+        });   
       }
 
     }
-    else{ //std unless 4th type created
+    else{ //ea
       
-      const row = mentorRows.filter(m => m.id == parentRowID)[0].students.filter(std => std.id == sid)[0];
+      const updatedMentors = mentorRows.map((m) => {
+        if(m.id == parentRowID){
+          var sum = 0;
+          m.attendees.map((row) => {
+            sum+=parseFloat(row.hoursAttended);
+            if(row.id == sid){
 
-        if(sid == null){
-          sendPost(row);
-          setHasAddRow((state) => ({ ...state, [parentRowID+parentRowType]: false }));
+              if(sid == null){
+                sendPost(row);
+                setHasAddRow((state) => ({ ...state, [parentRowID+parentRowType]: false }));
 
-        }else{
-          sendUpdate(row);
+              }else{
+                sendUpdate(row);
 
-          //remove from previous
-          if (previous[sid+rowType+parentRowID+parentRowType]) {
-            setPrevious((state) => {
-              delete state[sid+rowType+parentRowID+parentRowType];
-              return state;
-            });   
-          }
+                //remove from previous
+                if (previous[sid+rowType+parentRowID+parentRowType]) {
+                  setPrevious((state) => {
+                    delete state[sid+rowType+parentRowID+parentRowType];
+                    return state;
+                  });   
+                }
+              }
+
+              return row;
+
+            }
+            return row;
+          });
+          console.log(sum);
+          return {...m, totalHours: sum};
         }
-        
-      
+        return m;
+      });
+
+      console.log(updatedMentors);
+      setMentorRows(updatedMentors);
+      console.log(mentorRows);
     }
+
   onToggleEditMode(sid,rowType, parentRowID, parentRowType);
   };
 
@@ -523,47 +530,62 @@ export function Timesheets() {
 
   const handleDialogDo = async() => {
     setOpenDialog(false);
-
+    console.log("handleDialogDo called at " + format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"));
     if(deleteType == "m"){
       //clearing mentor
 
-      //reassigning of mentorStudents in db is done in MentorController.DeleteMentor
-      const result = await axios.delete("http://localhost:9898/api/Mentor/"+deleteID,deleteID,headers);
+      //ended up doing operations of toggleIsEditMode since when it was called at the end of clear total hours wouldn't get reset, plus also save time not having to loop again
+      setMentorRows((state) => {
+        return mentorRows.map((m) => {
+          if(m.id == deleteID){
+            console.log(m);
+            var cnt = 0;
+            const updatedAttds = m.attendees.map((attendeeRow) =>{
+              console.log(cnt);
+              cnt++;
+              console.log(attendeeRow);
+              attendeeRow.hoursAttended = 0;
+              if(attendeeRow.id == null){
+                sendPost(attendeeRow, true);
+                setHasAddRow((state) => ({ ...state, [deleteID+deleteType]: false }));
 
-      console.log(result);
-      if(result.status == 200){
-        //still need to actually reassign twinRowsID -> null for the staffStudent twin counterparts, 
-        const newRows = mentorRows.filter(mtr => mtr.id != deleteID);
-        const mentorStudents = mentorRows.filter(mtr => mtr.id == deleteID)[0].students;
+              }else{
+                sendUpdate(attendeeRow, true);
 
-        setMentorRows((state) => {
-          return newRows.map((row) => {
-            if(row.isPlaceholder){
-              mentorStudents.map((studentRow) => {
-                studentRow.parentRowID = null;
-                setTwinRows((state) => ({ ...state, [studentRow.id]: {mentorID: null, staffID: twinRows[studentRow.id].staffID} }));
-                row.students.push(studentRow);
-              });
-              return row;
-            }
-            return row;       
-          });
+                //remove from previous
+                if (previous[attendeeRow.id+"ea"+deleteID+"m"]) {
+                  setPrevious((state) => {
+                    delete state[attendeeRow.id+"ea"+deleteID+"m"];
+                    return state;
+                  });   
+                }
+              }
+              attendeeRow.isEditMode = false;
+              return attendeeRow;
+            });
+            console.log(updatedAttds);
+            return {...m, totalHours: 0, attendees: updatedAttds, isEditMode: false};
+          }
+          return m;
         });
-      
+      });
+
+      //remove from previous
+      if (previous[deleteID+deleteType]) {
         setPrevious((state) => {
           delete state[deleteID+deleteType];
           return state;
-        });      
-
-        alert(`Succesfully Deleted Mentor ${deleteID}`);
-      }else{
-        alert(`Failed to ${dialogTitleText} \n ${result.statusText}`);
+        });   
       }
 
-    }else if(deleteType == "std"){
-      //deleting students
+      setOpens((state) => ({ ...state, [deleteID+"m"]: !opens[deleteID+"m"]  }));
 
-      axios.delete("http://localhost:9898/api/Student/"+deleteID,deleteID,headers).then((res) =>{
+      alert(`Succesfully Cleared Mentor ${deleteID}`);
+
+    }else if(deleteType == "ea"){
+      //deleting eventAttendee
+
+      axios.delete("http://localhost:9898/api/eventattendees/"+deleteID,deleteID,headers).then((res) =>{
         console.log(res);
       });
 
@@ -572,19 +594,14 @@ export function Timesheets() {
         return state;
       });
 
-
-        //deleting twin previous
-        setPrevious((state) => {
-          delete state[deleteID+deleteType+twinRows[deleteID].staffID+"std"];
-          return state;
-        });
-
-        //deleting targeted student
+        //deleting targeted eventAttendee
         setMentorRows((state) => {
           return mentorRows.map((row) => {
             if (row.id === deleteParentID) {
-              row.students = row.students.filter(std => std.id != deleteID);
-              return { ...row, students: row.students };
+              const deletedHours = parseFloat(row.attendees.filter(atd => atd.id == deleteID)[0].hoursAttended);
+              console.log(deletedHours);
+              row.attendees = row.attendees.filter(atd => atd.id != deleteID);
+              return { ...row, attendees: row.attendees, totalHours:  row.totalHours-deletedHours};
             }
             return row;
           });
@@ -619,13 +636,13 @@ export function Timesheets() {
 
     const newRows = mentorRows.map((row) => {
       if (row.id === parentRowID) {
-        row.students.map((studentRow) => {
-          if (studentRow.id === id){
-            setDialogTitleText(`Delete Student ${studentRow.firstName} ${studentRow.lastName}?`);
-            setDialogContentText(`This Student will be removed from the database.`);
+        row.attendees.map((attendeeRow) => {
+          if (attendeeRow.id === id){
+            setDialogTitleText(`Delete Timesheet for Event ${attendeeRow.eventName} on ${format(new Date(attendeeRow.eventDate), "MM/dd/yyyy")} for Mentor  ${row.firstName} ${row.lastName}?`);
+            setDialogContentText(`This Mentor will no longer be an attendee for this event.`);
             setOpenDialog(true);
           }
-          return studentRow;
+          return attendeeRow;
         });
         return row;
       }
@@ -652,7 +669,9 @@ export function Timesheets() {
     onToggleEditMode(id,rowType);
   };
 
-  const sendPost = async (row) => {
+  const sendPost = async (row, silent = false) => {
+
+    console.log(row);
 
     if(row.rowType == "m"){
       //saving new mentor
@@ -689,98 +708,71 @@ export function Timesheets() {
           });
         });
 
-        alert(`New Mentor ${result.data.firstName} ${result.data.lastName} saved successfully.`)
-
+        if(!silent){
+          alert(`New Mentor ${result.data.firstName} ${result.data.lastName} saved successfully.`)
+        }
       }else{
-        alert(`Failed to save Mentor ${row.firstName} ${row.lastName}` + result);
+        if(!silent){
+          alert(`Failed to save Mentor ${row.firstName} ${row.lastName}` + result);
+        }
       }
 
-    }else{//std unless come up with 4th row type
-      //saving new student
-      const student = {
-        "studentID": row.id,
-        "contact":{
-          "primaryPhone": row.primaryPhone,
-          "homePhone": row.homePhone,
-          "cellPhone": row.cellPhone,
-          "email": row.email,
-          "address1": row.address1,
-          "address2": row.address2,
-          "city": row.city,
-          "state": row.state,
-          "zip": row.zip,
-          "id": row.contactID,
-          "contactID": row.contactID,},
-        "firstName": row.firstName,
-        "lastName": row.lastName,
+    }else{//ea
+      //saving new attendee
+      const eventAttendee = {
+        "attendeeID": row.id,
+        "event":{
+          "eventName": row.eventName,
+          "eventDate": format(new Date(row.eventDate), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+          "location": row.location,
+          "id": row.eventID,
+          "eventID": row.eventID,},
+        "mentor":{
+          "mentorID": row.mentorID,},
         "id": row.id,
-        "dob": format(new Date(row.DOB), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-        "grade": row.grade,
-        "contactID": row.contactID,  
-        "mentorID": (row.parentRowType === "m") ? row.parentRowID : null,
-        "staffID": (row.parentRowType === "stf") ? row.parentRowID : null,
+        "hours": row.hoursAttended,
       }
         
-        const result = (row.parentRowID === null) ? await axios.post("http://localhost:9898/api/Student/",student,headers) : await axios.post("http://localhost:9898/api/Student/mentors/"+student.mentorID,student,headers);
+      const result = await axios.post("http://localhost:9898/api/eventattendees/mentors/",eventAttendee,headers);
 
-        console.log(result);
-        if(result.status == 201){
+      console.log(result);
+      if(result.status == 201){
 
-          //add to twinRows
-          setTwinRows((state) => ({ ...state, [result.data.id]: {mentorID: row.parentRowID, staffID: null} }));
-
-          //add student id and ContactID to newly saved row
-          setMentorRows((state) => {
-            return mentorRows.map((m) => {
-              if((result.data.mentor !== null) ? m.id === result.data.mentor.mentorID : m.id === null){
+        //add attendeeID and eventID to newly saved row
+        setMentorRows((state) => {
+          return mentorRows.map((m) => {
+            if((result.data.mentor !== null) ? m.id === result.data.mentor.mentorID : m.id === null){
                 
-                const stds = m.students.map((studentRow) => {
-                  if(studentRow.id == row.id){
-                    return { ...studentRow, id: result.data.id, contactID: result.data.contact.contactID, isEditMode: false}
-                  }
-                  return studentRow;
-                });
-                return {...m, students: stds};
-              }
-              return m;
-            });
+              const atds = m.attendees.map((attendeeRow) => {
+                if(attendeeRow.id == row.id){
+                  return { ...attendeeRow, id: result.data.id, eventID: result.data.event.eventID, isEditMode: false}
+                }
+                return attendeeRow;
+              });
+              return {...m, attendees: atds};
+            }
+            return m;
           });
+        });
 
-          //add to unassigned staff now since successfully saved
-
-          const newStudent = ({
-            id: result.data.id,
-            rowType: "std",
-            parentRowID: null,
-            parentRowType: "stf",
-            firstName: row.firstName,
-            lastName: row.lastName,
-            DOB: row.DOB,
-            grade: row.grade,
-            primaryPhone: row.primaryPhone, 
-            homePhone: row.homePhone, 
-            cellPhone: row.cellPhone, 
-            email: row.email, 
-            address1: row.address1, 
-            address2: row.address2, 
-            city: row.city, 
-            state: row.state, 
-            zip: row.zip,
-            contactID: result.data.contact.contactID,
-            isEditMode: false,
-          });
-
-          alert(`New Student ${result.data.firstName} ${result.data.lastName} saved successfully. \n This student will also appear in the Staff grid under Unassigned Students.`);
-
-        }else{
-          alert(`Failed to save student ${row.firstName} ${row.lastName} \n` + result);
+        if(!silent){
+          alert(`New Timesheet for Event ${result.data.event.eventName} on ${format(new Date(result.data.event.eventDate), "MM/dd/yyyy")} saved successfully.`);
         }
+
+      }else{
+        if(!silent){
+          alert(`Failed to save Timesheet for Event ${result.data.event.eventName} on ${format(new Date(result.data.event.eventDate), "MM/dd/yyyy")} \n` + result);
+        }
+      }
 
     }
 
   };
 
   const sendUpdate = async (row, silent = false) => {
+    
+    console.log(row);
+    console.log(silent);
 
     if(row.rowType == "m"){
       //updating mentors
@@ -816,65 +808,68 @@ export function Timesheets() {
         }
       }
 
-    }else if(row.rowType == "std"){
-      //updating students
-      const student = {
-        "studentID": row.id,
-        "contact":{
-          "primaryPhone": row.primaryPhone,
-          "homePhone": row.homePhone,
-          "cellPhone": row.cellPhone,
-          "email": row.email,
-          "address1": row.address1,
-          "address2": row.address2,
-          "city": row.city,
-          "state": row.state,
-          "zip": row.zip,
-          "id": row.contactID,
-          "contactID": row.contactID,},
-        "firstName": row.firstName,
-        "lastName": row.lastName,
+    }else{
+      //updating attendees
+      //You shouldn’t need to go deeper than resource/identifier/resource. will probably do like /eventattendees/{attendeeID}/mentors/?eventID=x&mentorID=y
+      const attendee = {
+        "attendeeID": 5,
+        "event": null,        
+        "staff": null,
+        "mentor": null,
+        "student": null,
+        "parent": null,
+        "hours": row.hoursAttended,
         "id": row.id,
-        "dob":format(new Date(row.DOB), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-        "grade": row.grade,
       }
 
-        //setting twinRows.mentorID in case student was moved up or down
-        setTwinRows((state) => ({ ...state, [row.id]: {mentorID: row.parentRowID, staffID: twinRows[row.id].staffID} }));
-        var result = {};
 
-        //4 endpoints both null X, only mentor X, only staff X, or both set X
-        if(row.parentRowID == null){
+      const attendee4 = {
+        "attendeeID": row.id,
+        "hours": "2",
+        "id": row.id,
+      }
 
-          if(twinRows[row.id].staffID == null){
-            result = await axios.put("http://localhost:9898/api/Student/",student,headers);
-          }else{
-            result = await axios.put("http://localhost:9898/api/Student/staff/"+twinRows[row.id].staffID,student,headers);
-          }
+      const attendee2 = `{"attendeeID":4,"event":null,"staff":null,"mentor":null,"student":null,"parent":null,"hours":2,"id":4}`;
+      const attendee3 = `{"attendeeID": 4, "hours": 2, "id": 4}`;
 
-        }else{
+      const stf = `{"staffID":29,"contact":{"primaryPhone":"","homePhone":"","cellPhone":"","email":"","address1":"","address2":"","city":"","state":"","zip":"","id":74,"contactID":74},"firstName":"testAddLimit","lastName":"e","id":29,"dob":"2022-11-12T00:00:00.000-05"}`;
 
-          if(twinRows[row.id].staffID == null){
-            result = await axios.put("http://localhost:9898/api/Student/mentors/"+row.parentRowID,student,headers);
-          }else{
-            result = await axios.put("http://localhost:9898/api/Student/staff/"+twinRows[row.id].staffID+"/mentors/"+row.parentRowID,student,headers);
-          }
+      const m2 = `{"mentorID":-1,"contact":null,"firstName":"Ashley","lastName":"Lall","id":-1,"dob":"2000-08-28T04:00:00.000+00:00"}`;
 
-        }
-
-        console.log(result);
-        if(result.status == 200){
+      //`http://localhost:9898/api/eventattendees/timesheets/?eventID=${row.eventID}&mentorID=${row.mentorID}`
+      var result = await axios.put(`http://localhost:9898/api/eventattendees/`,attendee,headers);
+    
+      console.log(result);
+      if(result.status == 200){
           
-          if(!silent){
-            alert(`Updates for Student ${result.data.firstName} ${result.data.lastName} saved successfully.`)
-          }
-        }else{
-          if(!silent){
-            alert(`Failed to save updates for Student ${row.firstName} ${row.lastName}` + result);
-          }
+        if(!silent){
+          alert(`Updates to Timesheet for Event ${result.data.event.eventName} on ${format(new Date(result.data.event.eventDate), "MM/dd/yyyy")} saved successfully.`)
         }
+      }else{
+        if(!silent){
+          alert(`Failed to save updates to Timesheet for Event ${result.data.event.eventName} on ${format(new Date(result.data.event.eventDate), "MM/dd/yyyy")}` + result);
+        }
+      }
       
     }
+  }
+
+  const handleDatePicked = (type, setDate) => {
+    console.log("Handle Date fucking called");
+    if(setDate!="Invalid Date"){
+
+      if(type == "from"){
+        setFromDate(setDate);
+        console.log(setDate);
+        setLoading(true);
+      }else{
+        setToDate(setDate);
+        console.log(setDate);
+        setLoading(true);
+      }
+
+    }
+
   }
 
   return (
@@ -894,15 +889,17 @@ export function Timesheets() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <IconButton style={{color: 'red'}} onClick={handleDialogDo}>Delete</IconButton>
+          <IconButton style={{color: 'red'}} onClick={handleDialogDo}>{(deleteType == "m") ? ("Clear") : ("Delete") }</IconButton>
           <IconButton onClick={handleCloseDialog}>
             Cancel
           </IconButton>
         </DialogActions>
       </Dialog>
       <h3>
-        Timesheets for <CustomKeyboardDatePicker></CustomKeyboardDatePicker>
+        Timesheets for All Mentors from <CustomKeyboardDatePicker setDate={fromDate} handleFxn={handleDatePicked} type="from"> </CustomKeyboardDatePicker> to <CustomKeyboardDatePicker setDate={toDate} handleFxn={handleDatePicked} type="to"> </CustomKeyboardDatePicker>
       </h3>
+
+
       {/* <p>More Basic Date Filter</p>
       <input alt="Home Phone Input Box" class="autocomplete" id="autocomplete-input" name="homePhone" type="date" value={''}/>
       <label for="autocomplete-input">Home Phone</label> */}

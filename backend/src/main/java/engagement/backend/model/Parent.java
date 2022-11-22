@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,7 +29,7 @@ public class Parent {
 
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
     //@JsonManagedReference
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "parentID", referencedColumnName = "parentID")
     private StudentParent studentParent;
 
@@ -51,13 +52,13 @@ public class Parent {
 
     }
 
-    public Parent(String firstName, String lastName, Timestamp DOB, long ContactID, StudentParent sp, Contact cntct) {
+    public Parent(String firstName, String lastName, Timestamp DOB) {
         super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.DOB = DOB;
-        this.studentParent = sp;
-        this.contact = cntct;
+        // this.studentParent = sp;
+        // this.contact = cntct;
     }
 
 
