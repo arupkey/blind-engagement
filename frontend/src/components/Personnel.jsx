@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useCallback } from "react";
+import { React, useEffect, useState, useCallback, Fragment } from "react";
 import axios from "../services/api";
 import ReactDOM from "react-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -31,6 +31,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import { format } from "date-fns";
+
+import CustomTableCell2 from "./CustomTableCell2";
 
 export function Personnel() {
   const [loading, setLoading] = useState(true);
@@ -444,6 +446,176 @@ export function Personnel() {
       </>
     );
   };
+
+  const CustomTableRow2 = useCallback((props) => {
+
+    return (
+      <>
+      <TableRow key={props.props.id}>
+        <TableCell key={"open"}>
+          {(props.props.id != null || props.props.isPlaceholder) ? (
+            <IconButton aria-label="expand row" size="small" onClick={() => setOpens((state) => ({ ...state, [props.props.id+props.props.rowType]: !opens[props.props.id+props.props.rowType] }))} >
+              {opens[props.props.id+props.props.rowType] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          ) : (
+            <></>
+          )}
+        </TableCell>
+
+        {/* <CustomTableCell {...{ row: props.props, name: "firstName", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "firstName", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "lastName", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "lastName", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "DOB", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "DOB", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "primaryPhone", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "primaryPhone", handleFxn: onChange, inputType: "tel"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "homePhone", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "homePhone", handleFxn: onChange, inputType: "tel"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "cellPhone", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "cellPhone", handleFxn: onChange, inputType: "tel"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "email", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "email", handleFxn: onChange, inputType: "email"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "address1", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "address1", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "address2", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "address2", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "city", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "city", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "state", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "state", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "zip", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "zip", handleFxn: onChange}) }
+
+        <TableCell key={"icons"}>
+          {props.props.isEditMode ? (
+            <>
+              <IconButton aria-label="save" onClick={() => onSave(props.props.id, props.props.rowType)} >
+                <SaveIcon />
+              </IconButton>
+              <IconButton aria-label="revert" onClick={() => onRevert(props.props.id, props.props.rowType)} >
+                <RevertIcon />
+              </IconButton>
+              <IconButton aria-label="delete" onClick={() => onDelete(props.props.id, props.props.rowType)} >
+                <DeleteIcon />
+              </IconButton>
+            </>
+          ) : (
+            props.props.isPlaceholder ? (
+              <></>
+            ) : (
+            <IconButton aria-label="edit" onClick={() => onToggleEditMode(props.props.id, props.props.rowType)} >
+              <EditIcon />
+            </IconButton>
+            )
+          )}
+        </TableCell>
+      </TableRow>
+      <TableRow key={"sCont"+props.props.id}>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+            <Collapse in={opens[props.props.id+props.props.rowType]} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 1 }}>
+                <Typography variant="h6" gutterBottom component="div">
+                  Students
+                </Typography>
+                <Table size="small" aria-label="students">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>First Name</TableCell>
+                      <TableCell>Last Name</TableCell>
+                      <TableCell align="right">Date of Birth</TableCell>
+                      <TableCell align="right">Grade</TableCell>
+                      <TableCell align="left">Primary Phone</TableCell>
+                      <TableCell align="left">Home Phone</TableCell>
+                      <TableCell align="left">Cell Phone</TableCell>
+                      <TableCell align="left">Email</TableCell>
+                      <TableCell align="left">Address 1</TableCell>
+                      <TableCell align="left">Address 2</TableCell>
+                      <TableCell align="left">City</TableCell>
+                      <TableCell align="left">State</TableCell>
+                      <TableCell align="left">Zip</TableCell>
+                      <TableCell align="right">Actions</TableCell>
+                      { !hasAddRow[props.props.id+props.props.rowType] ? (
+                        <IconButton aria-label="add new student" onClick={() => onAdd("std", props.props.id, props.props.rowType)} >
+                          <AddIcon />
+                        </IconButton>
+                      ) : (
+                        <></>
+                      )}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {props.props.students.map((studentsRow) => (
+                      <TableRow key={studentsRow.id}>
+
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "firstName", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "firstName", handleFxn: onChange}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "lastName", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "lastName", handleFxn: onChange}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "DOB", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "DOB", handleFxn: onChange}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "grade", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "grade", handleFxn: onChange, inputType: "number"}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "primaryPhone", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "primaryPhone", handleFxn: onChange, inputType: "tel"}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "homePhone", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "homePhone", handleFxn: onChange, inputType: "tel"}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "cellPhone", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "cellPhone", handleFxn: onChange, inputType: "tel"}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "email", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "email", handleFxn: onChange, inputType: "email"}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "address1", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "address1", handleFxn: onChange}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "address2", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "address2", handleFxn: onChange}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "city", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "city", handleFxn: onChange}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "state", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "state", handleFxn: onChange}) }
+                        {/* <CustomTableCell {...{ row: studentsRow, name: "zip", onChange }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: studentsRow, name: "zip", handleFxn: onChange}) }
+                        
+                        <TableCell align="right">
+                          {studentsRow.isEditMode ? (
+                            <>
+                              <IconButton aria-label="save" onClick={() => onSave(studentsRow.id, studentsRow.rowType, props.props.id, props.props.rowType)} >
+                                <SaveIcon />
+                              </IconButton>
+                              <IconButton aria-label="revert" onClick={() => onRevert(props.props.id, props.props.rowType)} >
+                                <RevertIcon />
+                              </IconButton>
+                              <IconButton aria-label="delete" onClick={() => onDelete(studentsRow.id, studentsRow.rowType, props.props.id, props.props.rowType)} >
+                                <DeleteIcon />
+                              </IconButton>
+                              <IconButton aria-label="move student up" onClick={() => moveStudentUp(studentsRow.id, props.props.id, props.props.rowType)} >
+                                <KeyboardArrowUpIcon />
+                              </IconButton>
+                              <IconButton aria-label="move student down" onClick={() => moveStudentDown(studentsRow.id, props.props.id, props.props.rowType)} >
+                                <KeyboardArrowDownIcon />
+                              </IconButton>
+                            </>
+                          ) : (
+                            <IconButton aria-label="edit" onClick={() => {
+                              onToggleEditMode(studentsRow.id, studentsRow.rowType, props.props.id, props.props.rowType);
+                              studentsRow.isEditMode = true;
+                              }  
+                            } >
+                              <EditIcon />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </>
+    );
+  }, [rows, mentorRows, opens]);
+
 
   const [previous, setPrevious] = useState({});
  
@@ -1669,7 +1841,7 @@ export function Personnel() {
 
   return (
     <Paper>
-      <h3>
+      {/* <h3>
         Staff
       </h3>
       <Dialog
@@ -1724,6 +1896,100 @@ export function Personnel() {
             <CustomTableRow props={row} />
           ))}
         </TableBody>
+      </Table> */}
+      {/* <h3>
+        Mentors 
+      </h3>
+      <Table aria-label="caption table">
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell align="left">First Name</TableCell>
+            <TableCell align="left">Last Name</TableCell>
+            <TableCell align="left">Date of Birth</TableCell>
+            <TableCell align="left">Primary Phone</TableCell>
+            <TableCell align="left">Home Phone</TableCell>
+            <TableCell align="left">Cell Phone</TableCell>
+            <TableCell align="left">Email</TableCell>
+            <TableCell align="left">Address 1</TableCell>
+            <TableCell align="left">Address 2</TableCell>
+            <TableCell align="left">City</TableCell>
+            <TableCell align="left">State</TableCell>
+            <TableCell align="left">Zip</TableCell>
+            <TableCell align="left">Actions</TableCell>
+            { !hasAddRow["mGrd"] ? (
+              <IconButton aria-label="add new mentor" onClick={() => onAdd("m")} >
+                <AddIcon />
+              </IconButton>
+            ) : (
+              <></>
+            )}            
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {mentorRows.map((row) => (
+            <CustomTableRow props={row} />
+          ))}
+        </TableBody>
+      </Table> */}
+
+      <h3>
+        Staff
+      </h3>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {dialogTitleText}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {dialogContentText}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <IconButton style={{color: 'red'}} onClick={handleDialogDelete}>Delete</IconButton>
+          <IconButton onClick={handleCloseDialog}>
+            Cancel
+          </IconButton>
+        </DialogActions>
+      </Dialog>
+      <Table aria-label="caption table">
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell align="left">First Name</TableCell>
+            <TableCell align="left">Last Name</TableCell>
+            <TableCell align="left">Date of Birth</TableCell>
+            <TableCell align="left">Primary Phone</TableCell>
+            <TableCell align="left">Home Phone</TableCell>
+            <TableCell align="left">Cell Phone</TableCell>
+            <TableCell align="left">Email</TableCell>
+            <TableCell align="left">Address 1</TableCell>
+            <TableCell align="left">Address 2</TableCell>
+            <TableCell align="left">City</TableCell>
+            <TableCell align="left">State</TableCell>
+            <TableCell align="left">Zip</TableCell>
+            <TableCell align="left">Actions</TableCell>
+            { !hasAddRow["stfGrd"] ? (
+              <IconButton aria-label="add new staff member" onClick={() => onAdd("stf")} >
+                <AddIcon />
+              </IconButton>
+            ) : (
+              <></>
+            )}        
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row) => (
+            <Fragment key={row.id}>
+              {CustomTableRow2({ props: row })}
+            </Fragment>
+          ))}
+        </TableBody>
       </Table>
       <h3>
         Mentors 
@@ -1756,7 +2022,9 @@ export function Personnel() {
         </TableHead>
         <TableBody>
           {mentorRows.map((row) => (
-            <CustomTableRow props={row} />
+            <Fragment key={row.id}>
+              {CustomTableRow2({ props: row })}
+            </Fragment>
           ))}
         </TableBody>
       </Table>

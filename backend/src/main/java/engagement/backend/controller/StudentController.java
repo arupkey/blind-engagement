@@ -115,7 +115,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
 
         oldStudent.setStaff(null);
@@ -131,7 +136,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
         
         oldStudent.setStaff(staffRepository.findById(id).orElse(null));
@@ -147,7 +157,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
         
         oldStudent.setStaff(null);
@@ -163,7 +178,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
         
         oldStudent.setStaff(staffRepository.findById(sid).orElse(null));

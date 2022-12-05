@@ -63,7 +63,12 @@ public class MentorController {
         oldMentor.setLastName(mentor.getLastName());
         oldMentor.setDOB(mentor.getDOB());
         
-        Contact updatedContact = contactController.PutContact(mentor.getContact());
+        Contact updatedContact = mentor.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldMentor.setContact(updatedContact);
 
         return mentorRepository.save(oldMentor);

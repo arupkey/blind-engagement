@@ -1,6 +1,6 @@
 import { DataGrid } from '@mui/x-data-grid';
 
-import { React, useEffect, useState, useCallback } from "react";
+import { React, useEffect, useState, useCallback, Fragment } from "react";
 import axios from "../services/api";
 import ReactDOM from "react-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -23,6 +23,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import { format } from "date-fns";
+
+import CustomTableCell2 from "./CustomTableCell2";
 
 const mentorGridRows = [
     {
@@ -96,6 +98,8 @@ export function Students() {
 
     const mentorName = (mentor != null) ? mentor.firstName + " " + mentor.lastName : "";
     const staffMemberName = (staff != null) ? staff.firstName + " " + staff.lastName : "";
+
+    setOpens((state) => ({ ...state, [id]: false }));
 
     return {
       id,
@@ -198,6 +202,8 @@ export function Students() {
       </TableCell>
     );
   };
+
+  const [opens, setOpens] = useState({});
 
   const CustomTableRow = (props) => {
 
@@ -303,6 +309,123 @@ export function Students() {
     );
   };
 
+  const CustomTableRow2 = useCallback((props) => {
+
+    return (
+      <>
+      <TableRow key={props.props.id}>
+        <TableCell key={"open"}>
+        <IconButton aria-label="expand row" size="small" onClick={() => setOpens((state) => ({ ...state, [props.props.id]: !opens[props.props.id] }))} >
+              {opens[props.props.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+        </TableCell>
+
+        {/* <CustomTableCell {...{ row: props.props, name: "firstName", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "firstName", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "lastName", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "lastName", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "DOB", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "DOB", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "grade", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "grade", handleFxn: onChange, inputType: "number"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "primaryPhone", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "primaryPhone", handleFxn: onChange, inputType: "tel"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "homePhone", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "homePhone", handleFxn: onChange, inputType: "tel"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "cellPhone", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "cellPhone", handleFxn: onChange, inputType: "tel"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "email", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "email", handleFxn: onChange, inputType: "email"}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "address1", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "address1", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "address2", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "address2", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "city", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "city", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "state", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "state", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "zip", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "zip", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "mentorName", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "mentorName", handleFxn: onChange}) }
+        {/* <CustomTableCell {...{ row: props.props, name: "staffMemberName", onChange }} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "staffMemberName", handleFxn: onChange}) }
+
+
+        <TableCell key={"icons"}>
+          {props.props.isEditMode ? (
+            <>
+              <IconButton aria-label="done" onClick={() => onToggleEditMode(props.props.id)} >
+                <DoneIcon />
+              </IconButton>
+              <IconButton aria-label="revert" onClick={() => onRevert(props.props.id)} >
+                <RevertIcon />
+              </IconButton>
+            </>
+          ) : (
+            <IconButton aria-label="delete" onClick={() => onToggleEditMode(props.props.id)} >
+              <EditIcon />
+            </IconButton>
+          )}
+        </TableCell>
+      </TableRow>
+      <TableRow key={"pCont"+props.props.id}>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+            <Collapse in={opens[props.props.id]} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 1 }}>
+                <Typography variant="h6" gutterBottom component="div">
+                  Parents
+                </Typography>
+                <Table size="small" aria-label="parents">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Parent First Name</TableCell>
+                      <TableCell>Parent Last Name</TableCell>
+                      <TableCell align="right">Primary Phone</TableCell>
+                      <TableCell align="right">Home Phone</TableCell>
+                      <TableCell align="right">Cell Phone</TableCell>
+                      <TableCell align="right">Email</TableCell>
+                      <TableCell align="right">Address 1</TableCell>
+                      <TableCell align="right">Address 2</TableCell>
+                      <TableCell align="right">City</TableCell>
+                      <TableCell align="right">State</TableCell>
+                      <TableCell align="right">Zip</TableCell>
+                      <TableCell align="right">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {props.props.parents.map((parentsRow) => (
+                      <TableRow key={parentsRow.id}>
+                        <TableCell component="th" scope="row">
+                          {parentsRow.firstName}
+                        </TableCell>
+                        <TableCell>{parentsRow.lastName}</TableCell>
+                        <TableCell align="right">{parentsRow.primaryPhone}</TableCell>
+                        <TableCell align="right">{parentsRow.homePhone}</TableCell>
+                        <TableCell align="right">{parentsRow.cellPhone}</TableCell>
+                        <TableCell align="right">{parentsRow.email}</TableCell>
+                        <TableCell align="right">{parentsRow.address1}</TableCell>
+                        <TableCell align="right">{parentsRow.address2}</TableCell>
+                        <TableCell align="right">{parentsRow.city}</TableCell>
+                        <TableCell align="right">{parentsRow.state}</TableCell>
+                        <TableCell align="right">{parentsRow.zip}</TableCell>
+                        <TableCell align="right">
+                          <IconButton aria-label="expand row" size="small">
+                            <EditIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </>
+    );
+  }, [rows], opens);
+
   const [previous, setPrevious] = useState({});
  
   const onToggleEditMode = (id) => {
@@ -351,7 +474,7 @@ export function Students() {
         <Paper>
             <h3>Students</h3>
 
-            <div style={{width: '100%' }}>
+            {/* <div style={{width: '100%' }}>
               <Table aria-label="caption table">
                 <TableHead>
                   <TableRow>
@@ -377,6 +500,39 @@ export function Students() {
                 <TableBody>
                   {rows.map((row) => (
                     <CustomTableRow props={row} />
+                  ))}
+                </TableBody>
+              </Table>
+            </div> */}
+
+            <div style={{width: '100%' }}>
+              <Table aria-label="caption table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell />
+                    <TableCell align="left">Student First Name</TableCell>
+                    <TableCell align="left">Student Last Name</TableCell>
+                    <TableCell align="left">Date of Birth</TableCell>
+                    <TableCell align="left">Grade</TableCell>
+                    <TableCell align="left">Primary Phone</TableCell>
+                    <TableCell align="left">Home Phone</TableCell>
+                    <TableCell align="left">Cell Phone</TableCell>
+                    <TableCell align="left">Email</TableCell>
+                    <TableCell align="left">Address 1</TableCell>
+                    <TableCell align="left">Address 2</TableCell>
+                    <TableCell align="left">City</TableCell>
+                    <TableCell align="left">State</TableCell>
+                    <TableCell align="left">Zip</TableCell>
+                    <TableCell align="right">Mentor Name</TableCell>
+                    <TableCell align="right">Staff Member Name</TableCell>
+                    <TableCell alight="left">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row) => (
+                    <Fragment key={row.id}>
+                      {CustomTableRow2({ props: row })}
+                    </Fragment>
                   ))}
                 </TableBody>
               </Table>

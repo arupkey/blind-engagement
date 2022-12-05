@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useCallback } from "react";
+import { React, useEffect, useState, useCallback, Fragment } from "react";
 import axios from "../services/api";
 import ReactDOM from "react-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -33,6 +33,8 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import { format } from "date-fns";
 import CustomKeyboardDatePicker from "./CustomKeyboardDatePicker";
+
+import CustomTableCell2 from "./CustomTableCell2";
 
 export function Timesheets() {
   const [loading, setLoading] = useState(true);
@@ -129,50 +131,96 @@ export function Timesheets() {
     
   }, [getAllEventAttendees, getAllMentors, loading, fromDate, toDate]);
 
-  // const handleChange = ({ target }) => {
-  //   target.preventDefault()
-  //   const { name, value } = target;
-  //   setStaff((prevInfo) => ({
-  //     ...prevInfo,
-  //     [name]: value,
-  //   }));
-  // };
+  const [previous, setPrevious] = useState({});
+
+  //const [editRow, setEditRow] = useState({});
+
+  const handleChange = ({ target }, row) => {
+    //console.log({target});
+    //setEditRow(row);
+    const {name, value} = target;
+    console.log("handle change called " + name + " " + value);
+
+    if(row.rowType == "m"){
+      if (!previous[row.id+row.rowType]) {
+        setPrevious((state) => ({ ...state, [row.id+row.rowType]: row }));
+      }
+
+      const newRows = mentorRows.map((m) => {
+        if (m.id === row.id) {
+          console.log(m);
+          return { ...m, [name]: value };
+        }
+        return m;
+      });
+      setMentorRows(newRows);
+    
+    }else{
+
+      if (!previous[row.id+row.rowType+row.mentorID+row.parentRowType]) {
+        setPrevious((state) => ({ ...state, [row.id+row.rowType+row.mentorID+row.parentRowType]: row }));
+      }
+        const newRows = mentorRows.map((mentorRow) => {
+
+          if(mentorRow.id === row.mentorID){
+            console.log("found mentor");
+            const newAttendees = mentorRow.attendees.map((attendee) => {
+              if(attendee.id === row.id){
+                console.log(attendee)
+                return { ...attendee, [name]: value };
+              }
+              return attendee;
+            });
+            console.log(newAttendees);
+            return { ...mentorRow, attendees: newAttendees };
+            
+          }
+          return mentorRow;
+        });
+        console.log(newRows);
+        setMentorRows(newRows);
+        
+    }
+
+    // target.preventDefault()
+    // const { name, value } = target;
+    // setStaff((prevInfo) => ({
+    //   ...prevInfo,
+    //   [name]: value,
+    // }));
+    //setEditRow(mentorRows.filter((m) => m.id == row.id)[0]);
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     //alert(JSON.stringify(staff, "", 2));
   };
 
-  const CustomTableCell = ({ row, name, onChange }) => {
-    
+  const CustomTableCell = useCallback(({ row, name }) => {
     return (
-      <TableCell align="left">
-        {row.isEditMode && name != "firstName" && name != "lastName" ? (
-          <Input
-            value= {(row[name] != null) ? row[name] : ""}
-            name={name}
-            onChange={(e) => onChange(e, row)}
-            //onFocusOut={(e) => onChange(e, row)}
-          />
+      <TableCell key={name} align="left">
+        {row.isEditMode && name != "firstName" ? (
+          <Input value= {(row[name] != null) ? row[name] : ""} name={name} onChange={(e) => handleChange(e, row)} />
         ) : (
           row[name]
         )}
       </TableCell>
     );
-  };
+  }, [mentorRows]);
 
   const [opens, setOpens] = useState({});
 
   const [hasAddRow, setHasAddRow] = useState({});
 
-  const CustomTableRow = (props) => {
+  const CustomTableRow = useCallback((props) => {
 
+    //console.log(opens);
     //console.log(props);
 
     return (
       <>
       <TableRow key={props.props.id}>
-        <TableCell>
+        <TableCell key={"open"}>
           {(props.props.id != null) ? (
             <IconButton aria-label="expand row" size="small" onClick={() => setOpens((state) => ({ ...state, [props.props.id+props.props.rowType]: !opens[props.props.id+props.props.rowType] }))} >
               {opens[props.props.id+props.props.rowType] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -182,11 +230,14 @@ export function Timesheets() {
           )}
         </TableCell>
 
-        <CustomTableCell {...{ row: props.props, name: "firstName", onChange }} > </CustomTableCell>
-        <CustomTableCell {...{ row: props.props, name: "lastName", onChange }} > </CustomTableCell>
-        <CustomTableCell {...{ row: props.props, name: "totalHours", onChange }} > </CustomTableCell>
-             
-        <TableCell>
+        {/* <CustomTableCell key={"fName"} {...{ row: props.props, name: "firstName"}} > </CustomTableCell> */}
+        {CustomTableCell({ row: props.props, name: "firstName"}) }
+        {/* <CustomTableCell key={"lName"} {...{ row: props.props, name: "lastName"}} > </CustomTableCell> */}
+        {CustomTableCell({ row: props.props, name: "lastName"}) }
+        {/* <CustomTableCell key={"hrs"} {...{ row: props.props, name: "totalHours"}} > </CustomTableCell> */}
+        {CustomTableCell({ row: props.props, name: "totalHours"}) }
+
+        <TableCell key={"icons"}>
           {props.props.isEditMode ? (
             <>
               <IconButton aria-label="save" onClick={() => onSave(props.props.id, props.props.rowType)} >
@@ -206,7 +257,7 @@ export function Timesheets() {
           )}
         </TableCell>
       </TableRow>
-      <TableRow>
+        <TableRow key={"sCont"+props.props.id}> {/*key meaning students container parent id */}
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
             <Collapse in={opens[props.props.id+props.props.rowType]} timeout="auto" unmountOnExit>
               <Box sx={{ margin: 1 }}>
@@ -234,10 +285,14 @@ export function Timesheets() {
                     {props.props.attendees.map((attendeeRow) => (
                       <TableRow key={attendeeRow.id}>
 
-                        <CustomTableCell {...{ row: attendeeRow, name: "eventName", onChange }} > </CustomTableCell>
-                        <CustomTableCell {...{ row: attendeeRow, name: "eventDate", onChange }} > </CustomTableCell>
-                        <CustomTableCell {...{ row: attendeeRow, name: "location", onChange }} > </CustomTableCell>
-                        <CustomTableCell {...{ row: attendeeRow, name: "hoursAttended", onChange }} > </CustomTableCell>
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "eventName" }} > </CustomTableCell> */}
+                        {CustomTableCell({ row: attendeeRow, name: "eventName"}) }
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "eventDate" }} > </CustomTableCell> */}
+                        {CustomTableCell({ row: attendeeRow, name: "eventDate"}) }
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "location" }} > </CustomTableCell> */}
+                        {CustomTableCell({ row: attendeeRow, name: "location"}) }
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "hoursAttended" }} > </CustomTableCell> */}
+                        {CustomTableCell({ row: attendeeRow, name: "hoursAttended"}) }
                         
                         <TableCell align="right">
                           {console.log(attendeeRow)}
@@ -273,14 +328,135 @@ export function Timesheets() {
         </TableRow>
       </>
     );
-  };
+  }, [mentorRows, opens]);
 
-  const [previous, setPrevious] = useState({});
+  //using customtablecell2 and customtablerow
+  const CustomTableRow2 = useCallback((props) => {
+
+    //console.log(opens);
+    //console.log(props);
+
+    return (
+      <>
+      <TableRow key={props.props.id}>
+        <TableCell key={"open"}>
+          {(props.props.id != null) ? (
+            <IconButton aria-label="expand row" size="small" onClick={() => setOpens((state) => ({ ...state, [props.props.id+props.props.rowType]: !opens[props.props.id+props.props.rowType] }))} >
+              {opens[props.props.id+props.props.rowType] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          ) : (
+            <></>
+          )}
+        </TableCell>
+
+        {/* <CustomTableCell key={"fName"} {...{ row: props.props, name: "firstName"}} > </CustomTableCell> */}
+        {/* {CustomTableCell2({ row: props.props, name: "firstName", handleFxn: handleChange}) } */}
+        <TableCell>{props.props.firstName}</TableCell>
+        {/* <CustomTableCell key={"lName"} {...{ row: props.props, name: "lastName"}} > </CustomTableCell> */}
+        {/* {CustomTableCell({ row: props.props, name: "lastName"}) } */}
+        {/* {CustomTableCell2({ row: props.props, name: "lastName", handleFxn: handleChange}) } */}
+        <TableCell>{props.props.lastName}</TableCell>
+        {/* <CustomTableCell key={"hrs"} {...{ row: props.props, name: "totalHours"}} > </CustomTableCell> */}
+        {CustomTableCell2({ row: props.props, name: "totalHours", handleFxn: handleChange, inputType: "number"}) }
+
+        <TableCell key={"icons"}>
+          {props.props.isEditMode ? (
+            <>
+              <IconButton aria-label="save" onClick={() => onSave(props.props.id, props.props.rowType)} >
+                <SaveIcon />
+              </IconButton>
+              <IconButton aria-label="revert" onClick={() => onRevert(props.props.id, props.props.rowType)} >
+                <RevertIcon />
+              </IconButton>
+              <IconButton aria-label="clear total hours" onClick={() => onClear(props.props.id, props.props.rowType)} >
+                <ClearIcon />
+              </IconButton>
+            </>
+          ) : (
+            <IconButton aria-label="edit" onClick={() => onToggleEditMode(props.props.id, props.props.rowType)} >
+              <EditIcon />
+            </IconButton>
+          )}
+        </TableCell>
+      </TableRow>
+        <TableRow key={"sCont"+props.props.id}> {/*key meaning students container parent id */}
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+            <Collapse in={opens[props.props.id+props.props.rowType]} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 1 }}>
+                <Typography variant="h6" gutterBottom component="div">
+                  Event Hours
+                </Typography>
+                <Table size="small" aria-label="events attended">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Event Name</TableCell>
+                      <TableCell>Event Date</TableCell>
+                      <TableCell>Location</TableCell>
+                      <TableCell>Hours Attended</TableCell>
+                      <TableCell align="right">Actions</TableCell>
+                      { !hasAddRow[props.props.id+props.props.rowType] ? (
+                        <IconButton aria-label="add new event attended" onClick={() => onAdd("ea", props.props.id, props.props.rowType)} >
+                          <AddIcon />
+                        </IconButton>
+                      ) : (
+                        <></>
+                      )}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {props.props.attendees.map((attendeeRow) => (
+                      <TableRow key={attendeeRow.id}>
+
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "eventName" }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: attendeeRow, name: "eventName", handleFxn: handleChange}) }
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "eventDate" }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: attendeeRow, name: "eventDate", handleFxn: handleChange}) }
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "location" }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: attendeeRow, name: "location", handleFxn: handleChange}) }
+                        {/* <CustomTableCell {...{ row: attendeeRow, name: "hoursAttended" }} > </CustomTableCell> */}
+                        {CustomTableCell2({ row: attendeeRow, name: "hoursAttended", handleFxn: handleChange, inputType: "number"}) }
+                        
+                        <TableCell align="right">
+                          {console.log(attendeeRow)}
+                          {attendeeRow.isEditMode ? (
+                            <>
+                              <IconButton aria-label="save" onClick={() => onSave(attendeeRow.id, attendeeRow.rowType, props.props.id, props.props.rowType)} >
+                                <SaveIcon />
+                              </IconButton>
+                              <IconButton aria-label="revert" onClick={() => onRevert(props.props.id, props.props.rowType)} >
+                                <RevertIcon />
+                              </IconButton>
+                              <IconButton aria-label="delete" onClick={() => onDelete(attendeeRow.id, attendeeRow.rowType, props.props.id, props.props.rowType)} >
+                                <DeleteIcon />
+                              </IconButton>
+                            </>
+                          ) : (
+                            <IconButton aria-label="edit" onClick={() => {
+                              onToggleEditMode(attendeeRow.id, attendeeRow.rowType, props.props.id, props.props.rowType);
+                              attendeeRow.isEditMode = true;
+                              }  
+                            } >
+                              <EditIcon />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </>
+    );
+  }, [mentorRows, opens]);
  
-  const onToggleEditMode = (id, rowType, parentRowID = "", parentRowType = "") => {
+  const onToggleEditMode = useCallback((id, rowType, parentRowID = "", parentRowType = "") => {
 
+    console.log("just called edit mode")
     if(rowType == "m"){
-      setMentorRows((state) => {
+      setMentorRows(() => {
         return mentorRows.map((row) => {
           if (row.id === id) {
             const attendees = row.attendees.map((attendeeRow) => {
@@ -289,6 +465,7 @@ export function Timesheets() {
             });
             setOpens((state) => ({ ...state, [id+"m"]: !opens[id+"m"]  }));
             setPrevious((state) => ({ ...state, [row.id+row.rowType]: row}));
+            console.log(row.isEditMode);
             return { ...row, isEditMode: !row.isEditMode, attendees: attendees };
           }
           return row;
@@ -297,7 +474,7 @@ export function Timesheets() {
 
     }else if(rowType == "ea"){
       console.log(mentorRows);
-        setMentorRows((state) => {
+        setMentorRows(() => {
           return mentorRows.map((row) => {
             if (row.id === parentRowID) {
               
@@ -315,7 +492,7 @@ export function Timesheets() {
         });
     }
 
-  };
+  }, [mentorRows, previous, opens]);
 
   const onChange = (e, row) => {
 
@@ -907,6 +1084,46 @@ export function Timesheets() {
       {/* <p>Date Filter</p> */}
       
 
+      {/* <Table aria-label="caption table">
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell align="left">First Name</TableCell>
+            <TableCell align="left">Last Name</TableCell>
+            <TableCell align="left">Total Hours</TableCell>
+            <TableCell align="left">Actions</TableCell>       
+          </TableRow>
+        </TableHead>
+        <TableBody>
+
+        {mentorRows.map((row) => (
+            <CustomTableRow props={row} />
+          ))}
+
+        </TableBody>
+      </Table> */}
+
+      {/* <Table aria-label="caption table">
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell align="left">First Name</TableCell>
+            <TableCell align="left">Last Name</TableCell>
+            <TableCell align="left">Total Hours</TableCell>
+            <TableCell align="left">Actions</TableCell>       
+          </TableRow>
+        </TableHead>
+        <TableBody>
+
+        {mentorRows.map((m) => (
+          <Fragment key={m.id}>
+          {CustomTableRow({ props: m })}
+          </Fragment>
+        ))}  
+
+        </TableBody>
+      </Table> */}
+
       <Table aria-label="caption table">
         <TableHead>
           <TableRow>
@@ -918,11 +1135,61 @@ export function Timesheets() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {mentorRows.map((row) => (
-            <CustomTableRow props={row} />
-          ))}
+
+        {mentorRows.map((m) => (
+          <Fragment key={m.id}>
+            {CustomTableRow2({ props: m })}
+          </Fragment>
+        ))}  
+
         </TableBody>
       </Table>
+
+
+      {/* <Table aria-label="caption table">
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell align="left">First Name</TableCell>
+            <TableCell align="left">Last Name</TableCell>
+            <TableCell align="left">Total Hours</TableCell>
+            <TableCell align="left">Actions</TableCell>       
+          </TableRow>
+        </TableHead>
+        <TableBody>
+
+        {mentorRows.map((m) => (
+          <Fragment key={m.id}>
+            {CustomTableRow4({ props: m })}
+          </Fragment>
+        ))}  
+
+        </TableBody>
+      </Table> */}
+
+
+      {/* <Table aria-label="caption table">
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell align="left">First Name</TableCell>
+            <TableCell align="left">Last Name</TableCell>
+            <TableCell align="left">Total Hours</TableCell>
+            <TableCell align="left">Actions</TableCell>       
+          </TableRow>
+        </TableHead>
+        <TableBody>
+
+        {mentorRows.map((row) => (
+          <TableRow key={"shit"+row.id}>
+            {CustomTableCell({ row: row, name: "lastName"}) }
+          </TableRow>
+          ))}
+
+        </TableBody>
+      </Table> */}
+
+
     </Paper>
   );
 }
