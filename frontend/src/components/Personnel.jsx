@@ -131,7 +131,7 @@ export function Personnel() {
   };
 
   const getAllStudents = useCallback(async () => {
-    const res = await axios.get("http://localhost:9898/api/Student/");
+    const res = await axios.get("http://localhost:9898/api/Students/");
     setStudent(res.data);
   }, [student]);
 
@@ -201,7 +201,7 @@ export function Personnel() {
   }, [staff]);
 
   const getAllMentors = useCallback(async () => {
-    const res = await axios.get("http://localhost:9898/api/Mentor/", headers);
+    const res = await axios.get("http://localhost:9898/api/Mentors/", headers);
     setMentors(res.data);
 
     const newRows = mentors.map((mentor) => {
@@ -1023,7 +1023,7 @@ export function Personnel() {
       //deleting mentor
 
       //reassigning of mentorStudents in db is done in MentorController.DeleteMentor
-      const result = await axios.delete("http://localhost:9898/api/Mentor/"+deleteID,deleteID,headers);
+      const result = await axios.delete("http://localhost:9898/api/Mentors/"+deleteID,deleteID,headers);
 
       console.log(result);
       if(result.status == 200){
@@ -1058,7 +1058,7 @@ export function Personnel() {
     }else if(deleteType == "std"){
       //deleting students
 
-      axios.delete("http://localhost:9898/api/Student/"+deleteID,deleteID,headers).then((res) =>{
+      axios.delete("http://localhost:9898/api/Students/"+deleteID,deleteID,headers).then((res) =>{
         console.log(res);
       });
 
@@ -1454,7 +1454,7 @@ export function Personnel() {
         "contactID":row.contactID,  
       }
 
-      const result = await axios.post("http://localhost:9898/api/Mentor/",mentor,headers);
+      const result = await axios.post("http://localhost:9898/api/Mentors/",mentor,headers);
       
       if(result.status == 200){
         setMentorRows((state) => {
@@ -1500,7 +1500,7 @@ export function Personnel() {
         
       if(row.parentRowType === "stf"){
         
-        const result = (row.parentRowID === null) ? await axios.post("http://localhost:9898/api/Student/",student,headers) : await axios.post("http://localhost:9898/api/Student/staff/"+student.staffID,student,headers);
+        const result = (row.parentRowID === null) ? await axios.post("http://localhost:9898/api/Students/",student,headers) : await axios.post("http://localhost:9898/api/Students/staff/"+student.staffID,student,headers);
 
         console.log(result);
         if(result.status == 201){
@@ -1566,7 +1566,7 @@ export function Personnel() {
 
       }else{
         
-        const result = (row.parentRowID === null) ? await axios.post("http://localhost:9898/api/Student/",student,headers) : await axios.post("http://localhost:9898/api/Student/mentors/"+student.mentorID,student,headers);
+        const result = (row.parentRowID === null) ? await axios.post("http://localhost:9898/api/Students/",student,headers) : await axios.post("http://localhost:9898/api/Students/mentors/"+student.mentorID,student,headers);
 
         console.log(result);
         if(result.status == 201){
@@ -1693,7 +1693,7 @@ export function Personnel() {
         "dob":format(new Date(row.DOB), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
       }
 
-      const result = await axios.put("http://localhost:9898/api/Mentor/",mentor,headers);
+      const result = await axios.put("http://localhost:9898/api/Mentors/",mentor,headers);
 
       console.log(result);
 
@@ -1738,17 +1738,17 @@ export function Personnel() {
         if(row.parentRowID == null){
 
           if(twinRows[row.id].mentorID == null){
-            result = await axios.put("http://localhost:9898/api/Student/",student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/",student,headers);
           }else{
-            result = await axios.put("http://localhost:9898/api/Student/mentors/"+twinRows[row.id].mentorID,student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/mentors/"+twinRows[row.id].mentorID,student,headers);
           }
 
         }else{
           
           if(twinRows[row.id].mentorID == null){
-            result = await axios.put("http://localhost:9898/api/Student/staff/"+row.parentRowID,student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/staff/"+row.parentRowID,student,headers);
           }else{
-            result = await axios.put("http://localhost:9898/api/Student/staff/"+row.parentRowID+"/mentors/"+twinRows[row.id].mentorID,student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/staff/"+row.parentRowID+"/mentors/"+twinRows[row.id].mentorID,student,headers);
           }
 
         }
@@ -1791,17 +1791,17 @@ export function Personnel() {
         if(row.parentRowID == null){
 
           if(twinRows[row.id].staffID == null){
-            result = await axios.put("http://localhost:9898/api/Student/",student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/",student,headers);
           }else{
-            result = await axios.put("http://localhost:9898/api/Student/staff/"+twinRows[row.id].staffID,student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/staff/"+twinRows[row.id].staffID,student,headers);
           }
 
         }else{
 
           if(twinRows[row.id].staffID == null){
-            result = await axios.put("http://localhost:9898/api/Student/mentors/"+row.parentRowID,student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/mentors/"+row.parentRowID,student,headers);
           }else{
-            result = await axios.put("http://localhost:9898/api/Student/staff/"+twinRows[row.id].staffID+"/mentors/"+row.parentRowID,student,headers);
+            result = await axios.put("http://localhost:9898/api/Students/staff/"+twinRows[row.id].staffID+"/mentors/"+row.parentRowID,student,headers);
           }
 
         }

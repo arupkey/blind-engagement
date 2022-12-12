@@ -22,7 +22,7 @@ import engagement.backend.repository.ContactRepository;
 
 @CrossOrigin(origins = "http:localhost:3000")
 @RestController
-@RequestMapping("/api/Contact")
+@RequestMapping("/api/Contacts")
 public class ContactController {
     
     @Autowired

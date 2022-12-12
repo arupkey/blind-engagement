@@ -1,6 +1,7 @@
 package engagement.backend.model;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -35,30 +38,25 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentID;
 
-    // @OneToOne
-    // @JoinColumn(name="ContactID")
-    // private Contact contact;
-
-    // @OneToOne(mappedBy = "student")
-    // private Contact contact;
-
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
-    //@JsonManagedReference
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "ContactID", referencedColumnName = "ContactID")
     private Contact contact;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
-    //@JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinColumn(name = "MentorID", referencedColumnName = "mentorID")
     private Mentor mentor;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
-    //@JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinColumn(name = "StaffID", referencedColumnName = "staffID")
     private Staff staff;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer"})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+    @JoinTable(name="studentparent", joinColumns=@JoinColumn(name="StudentID", referencedColumnName = "StudentID"), inverseJoinColumns=@JoinColumn(name="ParentID", referencedColumnName = "ParentID"))
+    private List<Parent> parents;
 
     @Column(name = "FirstName")
     private String firstName;
@@ -71,35 +69,6 @@ public class Student {
 
     @Column(name = "Grade")
     private Integer grade;
-
-    // @Column(insertable = false, updatable = false, name = "ContactID", nullable = false)
-    // private Long ContactID;
-
-    // @Column(name = "MentorID")
-    // private Long MentorID;
-
-    // @Column(name = "StaffID")
-    // private Long StaffID;
-
-    // public Student() {
-        
-    // }
-
-    // public Student(String firstName, String lastName, Timestamp DOB, Integer grade, Long MentorID, Long StaffID) {
-    //     super();
-    //     this.firstName = firstName;
-    //     this.lastName = lastName;
-    //     this.DOB = DOB;
-    //     this.grade = grade;
-    //     // this.ContactID = ContactID;
-    //     this.mentor = new Mentor();
-    //     this.mentor.setMentorID(MentorID);
-    //     this.staff = new Staff();
-    //     this.staff.setStaffID(StaffID);
-    //     //this.contact = cntct;
-    //     //this.mentor = mntr;
-    //     //this.staff = stff;
-    // }
 
     public long getId() {
         return studentID;
@@ -132,24 +101,6 @@ public class Student {
     public void setGrade(Integer grade) {
         this.grade = grade;
     }
-    // public Long getContactID() {
-    //     return ContactID;
-    // }
-    // public void setContactID(Long ContactID) {
-    //     this.ContactID = ContactID;
-    // }
-    // public Long getMentorID() {
-    //     return MentorID;
-    // }
-    // public void setMentorID(Long MentorID) {
-    //     this.MentorID = MentorID;
-    // }
-    // public Long getStaffID() {
-    //     return StaffID;
-    // }
-    // public void setStaffID(Long StaffID) {
-    //     this.StaffID = StaffID;
-    // }
 
     public Contact getContact(){
         return contact;

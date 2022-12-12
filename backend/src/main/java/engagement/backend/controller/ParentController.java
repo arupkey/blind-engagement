@@ -18,7 +18,7 @@ import engagement.backend.model.Parent;
 import engagement.backend.repository.ParentRepository;
 
 @RestController
-@RequestMapping("/api/Parent")
+@RequestMapping("/api/Parents")
 public class ParentController {
     
     @Autowired

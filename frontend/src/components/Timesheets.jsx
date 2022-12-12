@@ -105,7 +105,7 @@ export function Timesheets() {
   }, [eventAttendees]);
 
   const getAllMentors = useCallback(async () => {
-    const res = await axios.get("http://localhost:9898/api/Mentor/", headers);
+    const res = await axios.get("http://localhost:9898/api/Mentors/", headers);
     setMentors(res.data);
     
     const newRows = mentors.map((mentor) => {
@@ -873,7 +873,7 @@ export function Timesheets() {
         "contactID":row.contactID,  
       }
 
-      const result = await axios.post("http://localhost:9898/api/Mentor/",mentor,headers);
+      const result = await axios.post("http://localhost:9898/api/Mentors/",mentor,headers);
       
       if(result.status == 200){
         setMentorRows((state) => {
@@ -973,7 +973,7 @@ export function Timesheets() {
         "dob":format(new Date(row.DOB), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
       }
 
-      const result = await axios.put("http://localhost:9898/api/Mentor/",mentor,headers);
+      const result = await axios.put("http://localhost:9898/api/Mentors/",mentor,headers);
 
       console.log(result);
 
@@ -1032,7 +1032,6 @@ export function Timesheets() {
   }
 
   const handleDatePicked = (type, setDate) => {
-    console.log("Handle Date fucking called");
     if(setDate!="Invalid Date"){
 
       if(type == "from"){

@@ -24,7 +24,7 @@ import engagement.backend.model.Contact;
 
 //@CrossOrigin(origins = "http:localhost:9898")
 @RestController
-@RequestMapping("/api/Student")
+@RequestMapping("/api/Students")
 public class StudentController {
     
     @Autowired

@@ -23,7 +23,7 @@ import engagement.backend.repository.StudentRepository;
 import engagement.backend.model.Contact;
 
 @RestController
-@RequestMapping("/api/Mentor")
+@RequestMapping("/api/Mentors")
 public class MentorController {
     
     @Autowired

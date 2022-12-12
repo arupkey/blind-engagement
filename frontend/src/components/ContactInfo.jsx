@@ -33,7 +33,7 @@ export function ContactInfo(){
 
   useEffect(() =>{
     console.log(Basic);
-    const address = "http://localhost:9898/api/Contact/"+user;
+    const address = "http://localhost:9898/api/Contacts/"+user;
     axios.get(address, headers)
     .then((res) => {
       console.log("data " + res.data);
@@ -58,7 +58,7 @@ export function ContactInfo(){
     console.log(info);
     const msg = "Delete Contact Info for user?"; //`Delete Contact Info for user ${info.firstName} ${info.lastName}?`;
     if (window.confirm(msg)){
-      const address = "http://localhost:9898/api/Contact/" + info.contactID;
+      const address = "http://localhost:9898/api/Contacts/" + info.contactID;
       //alert("Delete will be sent to " + address);
       axios.delete(address,headers).then((res) =>{
         console.log(res);
@@ -86,12 +86,12 @@ export function ContactInfo(){
     console.log(info);
     if(info.contactID != null){
       //updating
-      axios.put("http://localhost:9898/api/Contact/",info,headers).then((res) =>{
+      axios.put("http://localhost:9898/api/Contacts/",info,headers).then((res) =>{
         console.log(res);
       });
     }else{
       //saving new
-      axios.post("http://localhost:9898/api/Contact/",info,headers).then((res) =>{
+      axios.post("http://localhost:9898/api/Contacts/",info,headers).then((res) =>{
         console.log(res);
       });
     }
