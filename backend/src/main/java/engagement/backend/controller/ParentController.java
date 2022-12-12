@@ -18,7 +18,7 @@ import engagement.backend.model.Parent;
 import engagement.backend.repository.ParentRepository;
 
 @RestController
-@RequestMapping("/api/Parent")
+@RequestMapping("/api/Parents")
 public class ParentController {
     
     @Autowired
@@ -46,7 +46,7 @@ public class ParentController {
         oldParent.setFirstName(Parent.getFirstName());
         oldParent.setLastName(Parent.getLastName());
         oldParent.setDOB(Parent.getDOB());
-        oldParent.setContactID(Parent.getContactID());
+        oldParent.setContact(Parent.getContact());
         return parentRepository.save(oldParent);
     }
 

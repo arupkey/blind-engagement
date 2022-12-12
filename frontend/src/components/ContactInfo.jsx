@@ -1,17 +1,18 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useCallback} from "react";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import './ContactInfo.css';
 import axios from '../services/api';
-
+import Input from "@material-ui/core/Input";
+import TableCell from "@material-ui/core/TableCell";
 import Button from '@mui/material/Button';
 import SendIcon from "@mui/icons-material/Send";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 export function ContactInfo(){
   const [info, setInfo] = useState({});
-  const [user, setUser] = useState("99")
+  const [user, setUser] = useState("82")
   
   const tok = 'user:7279142c-d726-4bd8-af64-8f866651cec6';
   const hash = btoa(tok);
@@ -32,18 +33,21 @@ export function ContactInfo(){
 
   useEffect(() =>{
     console.log(Basic);
-    const address = "http://localhost:9898/api/Contact/"+user;
+    const address = "http://localhost:9898/api/Contacts/"+user;
     axios.get(address, headers)
     .then((res) => {
       console.log("data " + res.data);
-      console.log("response header " + res.headers['Authorization']);
-      setInfo(res.data);
+      //console.log("response header " + res.headers['Authorization']);
+      //setInfo(res.data);
+      setInfo({...res.data, isEditMode: true});
     }).catch(err => console.log("error found " + err));
     console.log(info);
   }, []||[]);
 
   const handleChange = ({target}) => {
+    // console.log({target});
     const {name, value} = target;
+    console.log("handle change called " + name + " " + value);
     setInfo((prevInfo) => ({
       ...prevInfo, [name]: value
     }));
@@ -54,7 +58,7 @@ export function ContactInfo(){
     console.log(info);
     const msg = "Delete Contact Info for user?"; //`Delete Contact Info for user ${info.firstName} ${info.lastName}?`;
     if (window.confirm(msg)){
-      const address = "http://localhost:9898/api/Contact/" + info.contactID;
+      const address = "http://localhost:9898/api/Contacts/" + info.contactID;
       //alert("Delete will be sent to " + address);
       axios.delete(address,headers).then((res) =>{
         console.log(res);
@@ -64,17 +68,30 @@ export function ContactInfo(){
     };
   }
 
+  const CustomTableCell = useCallback(({ row, name }) => {
+    
+    return (
+      <TableCell key={1} align="left">
+        {row.isEditMode && name != "firstName" && name != "lastName" ? (
+          <Input value= {(row[name] != null) ? row[name] : ""} name={name} onChange={handleChange} />
+        ) : (
+          row[name]
+        )}
+      </TableCell>
+    );
+  }, []);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log(info);
     if(info.contactID != null){
       //updating
-      axios.put("http://localhost:9898/api/Contact/",info,headers).then((res) =>{
+      axios.put("http://localhost:9898/api/Contacts/",info,headers).then((res) =>{
         console.log(res);
       });
     }else{
       //saving new
-      axios.post("http://localhost:9898/api/Contact/",info,headers).then((res) =>{
+      axios.post("http://localhost:9898/api/Contacts/",info,headers).then((res) =>{
         console.log(res);
       });
     }
@@ -116,24 +133,37 @@ export function ContactInfo(){
               <tr>
                 <td>
                   <i class="material-icons prefix">house</i>
-                  <input alt="Address Input Box" class="autocomplete" id="autocomplete-input" name="address1" onChange={handleChange} type="text" value={info.address1 || ''}/>
+                  <Input value= {info.address1 || ''} name="address1" onChange={handleChange} />
+                  {/* <input alt="Address Input Box" class="autocomplete" id="autocomplete-input" name="address1" onChange={handleChange} type="text" value={info.address1 || ''}/> */}
                   <label for="autocomplete-input">Address</label>
                 </td>
               </tr>
 
               <tr>
-                <td>
+                <TableCell key={1} align="left">
+                  {info.isEditMode ? (
+                    <Input value= {(info.address2 != null) ? info.address2 : ""} name="address2" onChange={handleChange} />
+                  ) : (
+                    info.address2
+                  )}
+                </TableCell>
+              {/* <Input value= {info.address2 || ''} name="address2" onChange={handleChange} /> */}
+              {/* <CustomTableCell {...{ row: info, name: "address2"}} > </CustomTableCell> */}
+                {/* <td>
                   <input alt="Address 2 Input Box" class="autocomplete" id="autocomplete-input" name="address2" onChange={handleChange} type="text" value={info.address2 || ''}/>
                   <label for="autocomplete-input">Address 2</label>
-                </td>
+                </td> */}
               </tr>
 
               <tr>
-                <td>
+              <CustomTableCell {...{ row: info, name: "city"}} />
+                {/* <td>
                   <i class="material-icons prefix">location_city</i>
                   <input alt="City Input Box" class="autocomplete" id="autocomplete-input" name="city" onChange={handleChange} type="text" value={info.city || ''}/>
                   <label for="autocomplete-input">City</label>
-                </td>
+                </td> */}
+              </tr>
+              <tr>
                 <td>
                   <input alt="State Input Box" class="autocomplete" id="autocomplete-input" name="state" onChange={handleChange} type="text" value={info.state || ''}/>
                   <label for="autocomplete-input">State</label>

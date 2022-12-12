@@ -63,7 +63,12 @@ public class StaffController {
         oldStaff.setLastName(staff.getLastName());
         oldStaff.setDOB(staff.getDOB());
         
-        Contact updatedContact = contactController.PutContact(staff.getContact());
+        Contact updatedContact = staff.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStaff.setContact(updatedContact);
 
         return staffRepository.save(oldStaff);

@@ -12,6 +12,7 @@ import { Personnel } from './components/Personnel.jsx';
 import {Timesheets} from "./components/Timesheets.jsx";
 import { ForumTopic } from './components/ForumTopic';
 import {Students} from './components/Students.jsx';
+import {CalendarEvent} from './components/CalendarEvent.jsx';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -28,6 +29,7 @@ root.render(
         <Route path="timesheets" element={<Timesheets />} />
         <Route path="post" element={<ForumTopic/>}/>
         <Route path="students" element={<Students /> }/>
+        <Route path="events" element={<CalendarEvent />}/>
       </Routes>      
     </BrowserRouter>
     

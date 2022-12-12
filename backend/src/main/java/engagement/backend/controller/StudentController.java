@@ -20,11 +20,11 @@ import engagement.backend.model.Student;
 import engagement.backend.repository.MentorRepository;
 import engagement.backend.repository.StaffRepository;
 import engagement.backend.repository.StudentRepository;
-import engagement.backend.model.Contact;;
+import engagement.backend.model.Contact;
 
 //@CrossOrigin(origins = "http:localhost:9898")
 @RestController
-@RequestMapping("/api/Student")
+@RequestMapping("/api/Students")
 public class StudentController {
     
     @Autowired
@@ -115,7 +115,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
 
         oldStudent.setStaff(null);
@@ -131,7 +136,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
         
         oldStudent.setStaff(staffRepository.findById(id).orElse(null));
@@ -147,7 +157,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
         
         oldStudent.setStaff(null);
@@ -163,7 +178,12 @@ public class StudentController {
         oldStudent.setDOB(student.getDOB());
         oldStudent.setGrade(student.getGrade());
         
-        Contact updatedContact = contactController.PutContact(student.getContact());
+        Contact updatedContact = student.getContact();
+        if(updatedContact.getContactID() == null){
+            updatedContact = contactController.PostContact(updatedContact);
+        }else{
+            updatedContact = contactController.PutContact(updatedContact);
+        }
         oldStudent.setContact(updatedContact);
         
         oldStudent.setStaff(staffRepository.findById(sid).orElse(null));
